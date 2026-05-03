@@ -1,0 +1,60 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "client_name": {
+      "type": "string",
+      "description": "Full name of the client"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email address of the client"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "Phone number of the client"
+    },
+    "shoot_type": {
+      "type": "string",
+      "enum": [
+        "event",
+        "real_estate"
+      ],
+      "description": "Type of photography session"
+    },
+    "shoot_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Scheduled date for the shoot"
+    },
+    "shoot_time": {
+      "type": "string",
+      "description": "Preferred time for the shoot"
+    },
+    "location": {
+      "type": "string",
+      "description": "Location/venue for the shoot"
+    },
+    "details": {
+      "type": "string",
+      "description": "Additional details or special requests"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Current status of the booking"
+    }
+  },
+  "required": [
+    "client_name",
+    "client_email",
+    "shoot_type",
+    "shoot_date"
+  ]
+}
