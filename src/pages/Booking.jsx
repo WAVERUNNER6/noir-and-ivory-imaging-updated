@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday, isBefore, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ArrowLeft, ArrowRight, Check, Camera, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -67,7 +67,7 @@ function BookingCalendar({ selectedDate, onSelectDate }) {
   );
 }
 
-function BookingForm({ form, setForm }) {
+function BookingForm({ form, setForm, bookedSlots }) {
   return (
     <div className="space-y-6">
       {[
@@ -85,12 +85,17 @@ function BookingForm({ form, setForm }) {
       <div>
         <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">PREFERRED TIME</label>
         <div className="grid grid-cols-3 gap-2">
-          {TIME_SLOTS.map(time => (
-            <button key={time} type="button" onClick={() => setForm({ ...form, shoot_time: time })}
-              className={`py-2.5 font-mono text-[11px] tracking-wider border transition-all ${form.shoot_time === time ? 'border-ivory bg-ivory/10 text-ivory' : 'border-halide/20 text-halide hover:border-halide/50'}`}>
-              {time}
-            </button>
-          ))}
+          {TIME_SLOTS.map(time => {
+            const isBooked = bookedSlots.includes(time);
+            return (
+              <button key={time} type="button" onClick={() => !isBooked && setForm({ ...form, shoot_time: time })} disabled={isBooked}
+                className={`py-2.5 font-mono text-[11px] tracking-wider border transition-all relative
+                  ${isBooked ? 'border-halide/10 text-halide/20 cursor-not-allowed line-through' : form.shoot_time === time ? 'border-ivory bg-ivory/10 text-ivory' : 'border-halide/20 text-halide hover:border-halide/50'}`}>
+                {time}
+                {isBooked && <span className="block text-[9px] tracking-wider mt-0.5 no-underline" style={{ textDecoration: 'none' }}>BOOKED</span>}
+              </button>
+            );
+          })}
         </div>
       </div>
       <div>
@@ -107,7 +112,17 @@ export default function Booking() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [bookedSlots, setBookedSlots] = useState([]);
   const [form, setForm] = useState({ client_name: '', client_email: '', client_phone: '', shoot_type: '', shoot_time: '', location: '', details: '' });
+
+  // Load booked time slots whenever selected date changes
+  useEffect(() => {
+    if (!selectedDate) return;
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    base44.entities.Booking.filter({ shoot_date: dateStr }).then(bookings => {
+      setBookedSlots(bookings.map(b => b.shoot_time).filter(Boolean));
+    });
+  }, [selectedDate]);
 
   const canProceed = () => {
     if (step === 0) return !!form.shoot_type;
@@ -118,7 +133,16 @@ export default function Booking() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    await base44.entities.Booking.create({ ...form, shoot_date: format(selectedDate, 'yyyy-MM-dd'), status: 'pending' });
+    const shootDate = format(selectedDate, 'yyyy-MM-dd');
+    await base44.entities.Booking.create({ ...form, shoot_date: shootDate, status: 'pending' });
+
+    // Notify studio via email
+    await base44.integrations.Core.SendEmail({
+      to: 'noirandivoryimaging@outlook.com',
+      subject: `New Booking: ${form.shoot_type?.replace('_', ' ')} — ${format(selectedDate, 'MMMM d, yyyy')}`,
+      body: `New booking request received:\n\nClient: ${form.client_name}\nEmail: ${form.client_email}\nPhone: ${form.client_phone || 'N/A'}\n\nShoot Type: ${form.shoot_type?.replace('_', ' ')}\nDate: ${format(selectedDate, 'EEEE, MMMM d, yyyy')}\nTime: ${form.shoot_time || 'Flexible'}\nLocation: ${form.location || 'TBD'}\n\nAdditional Details:\n${form.details || 'None'}\n\nPlease respond within 24 hours to confirm.`,
+    });
+
     toast.success('Booking request submitted!');
     setSubmitted(true);
     setSubmitting(false);
@@ -188,7 +212,7 @@ export default function Booking() {
             {step === 2 && (
               <div>
                 <h2 className="font-display text-ivory text-3xl mb-8">Your details</h2>
-                <BookingForm form={form} setForm={setForm} />
+                <BookingForm form={form} setForm={setForm} bookedSlots={bookedSlots} />
               </div>
             )}
             {step === 3 && (
