@@ -58,7 +58,7 @@ export default function Footer() {
                 <a href="mailto:hello@noirandivoriy.com" className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors">noirandivoryimaging@outlook.com
 
                 </a>
-                <span className="font-body text-sm text-ivory/60">+1 310-924-5256</span>
+                <span className="font-body text-sm text-ivory/60"></span>
                 <span className="font-body text-sm text-ivory/60">Los Angeles, CA</span>
               </div>
             </div>
