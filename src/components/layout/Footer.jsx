@@ -24,21 +24,21 @@ export default function Footer() {
               <p className="font-mono text-xs text-halide tracking-widest uppercase mb-4">Navigation</p>
               <div className="flex flex-col gap-3">
                 {[
-                  { label: 'Events', path: '/events' },
-                  { label: 'Real Estate', path: '/real-estate' },
-                  { label: 'About', path: '/about' },
-                  { label: 'Contact', path: '/contact' },
-                  { label: 'Book a Session', path: '/booking' },
-                ].map((link) => (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors flex items-center gap-1 group"
-                  >
+                { label: 'Events', path: '/events' },
+                { label: 'Real Estate', path: '/real-estate' },
+                { label: 'About', path: '/about' },
+                { label: 'Contact', path: '/contact' },
+                { label: 'Book a Session', path: '/booking' }].
+                map((link) =>
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors flex items-center gap-1 group">
+                  
                     {link.label}
                     <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
-                ))}
+                )}
               </div>
             </div>
 
@@ -55,10 +55,10 @@ export default function Footer() {
             <div>
               <p className="font-mono text-xs text-halide tracking-widest uppercase mb-4">Contact</p>
               <div className="flex flex-col gap-3">
-                <a href="mailto:hello@noirandivoriy.com" className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors">
-                  hello@noirandivory.com
+                <a href="mailto:hello@noirandivoriy.com" className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors">noirandivoryimaging@outlook.com
+
                 </a>
-                <span className="font-body text-sm text-ivory/60">+1 (555) 987-6543</span>
+                <span className="font-body text-sm text-ivory/60"></span>
                 <span className="font-body text-sm text-ivory/60">Los Angeles, CA</span>
               </div>
             </div>
@@ -77,6 +77,6 @@ export default function Footer() {
           </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>);
+
 }
