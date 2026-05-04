@@ -55,10 +55,10 @@ export default function Footer() {
             <div>
               <p className="font-mono text-xs text-halide tracking-widest uppercase mb-4">Contact</p>
               <div className="flex flex-col gap-3">
-                <a href="mailto:hello@noirandivoriy.com" className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors">noirandivoryimaging@outlook.com
-
+                <a href="mailto:hello@noirandivoriy.com" className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors">
+                  hello@noirandivory.com
                 </a>
-                <span className="font-body text-sm text-ivory/60"></span>
+                <span className="font-body text-sm text-ivory/60">+1 31</span>
                 <span className="font-body text-sm text-ivory/60">Los Angeles, CA</span>
               </div>
             </div>
