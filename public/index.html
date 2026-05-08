@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noir & Ivory Imaging</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --noir: #0A0A0A;
+      --ivory: #F9F7F5;
+      --halide: #8E8E8E;
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--noir); color: var(--ivory); overflow-x: hidden; }
+    a { text-decoration: none; color: inherit; }
+    ::selection { background: var(--noir); color: var(--ivory); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: #8E8E8E; }
+
+    /* PAGE VISIBILITY */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+    nav.scrolled { background: rgba(10,10,10,0.9); backdrop-filter: blur(12px); }
+    .nav-brand { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.15em; color: var(--ivory); cursor: pointer; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; color: var(--halide); transition: color 0.2s; cursor: pointer; }
+    .nav-links a:hover, .nav-links a.active-link { color: var(--ivory); }
+    .nav-book {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
+      border: 1px solid var(--ivory); color: var(--ivory) !important;
+      padding: 10px 20px; transition: background 0.2s, color 0.2s !important;
+    }
+    .nav-book:hover { background: var(--ivory); color: var(--noir) !important; }
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 1px; background: var(--ivory); transition: all 0.3s; }
+    .mobile-menu {
+      display: none; position: fixed; inset: 0; z-index: 190;
+      background: var(--noir); flex-direction: column;
+      align-items: center; justify-content: center; gap: 40px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { font-family: var(--font-display); font-size: 3rem; color: var(--halide); transition: color 0.2s; cursor: pointer; }
+    .mobile-menu a:hover { color: var(--ivory); }
+    .mobile-close { position: absolute; top: 24px; right: 24px; font-family: var(--font-mono); font-size: 12px; color: var(--halide); cursor: pointer; letter-spacing: 0.2em; }
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+    }
+
+    /* ─── SHARED ─── */
+    .container { max-width: 1600px; margin: 0 auto; padding: 0 48px; }
+    @media (max-width: 768px) { .container { padding: 0 24px; } }
+    .section-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.3em; margin-bottom: 16px; }
+    .arrow-icon { display: inline-flex; }
+
+    /* ─── FADE-IN ─── */
+    .fade-in { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .delay-1 { transition-delay: 0.15s; }
+    .delay-2 { transition-delay: 0.3s; }
+
+    /* ══════════════════════════════
+       HOME PAGE
+    ══════════════════════════════ */
+    .hero { display: flex; height: 100vh; position: relative; overflow: hidden; }
+    .hero-panel {
+      flex: 1; position: relative; overflow: hidden; cursor: pointer;
+      transition: flex 0.8s cubic-bezier(0.76,0,0.24,1);
+    }
+    .hero:has(.hero-panel:hover) .hero-panel:not(:hover) { flex: 0.65; }
+    .hero-panel:hover { flex: 1.55; }
+    .hero-panel img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 1.5s ease, filter 0.5s ease;
+      filter: brightness(0.55);
+    }
+    .hero-panel:hover img { transform: scale(1.05); filter: brightness(0.8); }
+    .hero-divider { width: 1px; background: rgba(142,142,142,0.3); z-index: 10; flex-shrink: 0; }
+    .hero-content {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 64px; display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .hero-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.3em; margin-bottom: 12px; }
+    .hero-title { font-family: var(--font-display); font-size: clamp(2.2rem, 4.5vw, 4.5rem); color: var(--ivory); line-height: 0.9; }
+    .hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 24px; }
+    .hero-sub-line { width: 48px; height: 1px; background: rgba(249,247,245,0.4); }
+    .hero-sub span { font-family: var(--font-mono); font-size: 11px; color: rgba(249,247,245,0.6); letter-spacing: 0.3em; }
+    .hero-center {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 20; text-align: center; pointer-events: none;
+    }
+    .hero-center h1 { font-family: var(--font-display); font-size: clamp(1.4rem, 2.8vw, 2.5rem); color: var(--ivory); letter-spacing: 0.15em; }
+    .hero-center p { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.4em; margin-top: 8px; }
+    @media (max-width: 768px) {
+      .hero { flex-direction: column; }
+      .hero-divider { width: 100%; height: 1px; }
+      .hero-content { padding: 32px 24px; }
+    }
+
+    .about-section { background: var(--ivory); padding: 120px 0; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    @media (max-width: 1024px) { .about-grid { grid-template-columns: 1fr; gap: 48px; } }
+    .about-headline { font-family: var(--font-display); font-size: clamp(2rem, 3.5vw, 3.5rem); color: var(--noir); line-height: 1; margin-bottom: 32px; }
+    .about-headline .muted { color: var(--halide); }
+    .about-body { font-family: var(--font-body); font-size: 18px; color: rgba(10,10,10,0.6); line-height: 1.7; max-width: 480px; margin-bottom: 40px; }
+    .text-link { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.15em; color: var(--noir); border-bottom: 1px solid var(--noir); padding-bottom: 4px; transition: color 0.2s, border-color 0.2s; cursor: pointer; }
+    .text-link:hover { color: var(--halide); border-color: var(--halide); }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .stat-card { text-align: center; padding: 32px; border: 1px solid rgba(10,10,10,0.1); }
+    .stat-number { font-family: var(--font-display); font-size: 48px; color: var(--noir); }
+    .stat-label { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.2em; margin-top: 8px; }
+
+    .portfolio-section { background: var(--noir); padding: 120px 0; }
+    .portfolio-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 64px; flex-wrap: wrap; gap: 24px; }
+    .portfolio-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.5rem); color: var(--ivory); line-height: 1; }
+    .portfolio-links { display: flex; gap: 24px; }
+    .portfolio-links a { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.15em; color: var(--halide); display: inline-flex; align-items: center; gap: 8px; transition: color 0.2s; cursor: pointer; }
+    .portfolio-links a:hover { color: var(--ivory); }
+    .portfolio-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    @media (max-width: 768px) { .portfolio-grid { grid-template-columns: 1fr; } }
+    .portfolio-item { position: relative; overflow: hidden; }
+    .portfolio-item:nth-child(2) { margin-top: 64px; }
+    .img-wrap-4-5 { aspect-ratio: 4/5; overflow: hidden; }
+    .portfolio-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s, filter 0.7s; filter: brightness(0.75); }
+    .portfolio-item:hover img { transform: scale(1.05); filter: brightness(1); }
+    .portfolio-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px; background: linear-gradient(to top, rgba(10,10,10,0.8), transparent); }
+    .caption-cat { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.2em; }
+    .caption-title { font-family: var(--font-display); font-size: 20px; color: var(--ivory); margin-top: 4px; }
+
+    .cta-section { background: var(--ivory); padding: 120px 0; text-align: center; }
+    .cta-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.3em; margin-bottom: 32px; }
+    .cta-headline { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6rem); color: var(--noir); line-height: 0.9; max-width: 700px; margin: 0 auto 48px; }
+    .cta-headline .muted { color: var(--halide); }
+    .cta-btn { display: inline-flex; align-items: center; gap: 16px; background: var(--noir); color: var(--ivory); padding: 20px 48px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em; transition: background 0.2s; cursor: pointer; border: none; }
+    .cta-btn:hover { background: var(--halide); }
+
+    /* ══════════════════════════════
+       EVENTS PAGE
+    ══════════════════════════════ */
+    #page-events { background: var(--noir); }
+    .page-header-dark { background: var(--noir); padding: 160px 0 80px; }
+    .page-header-light { background: var(--ivory); padding: 160px 0 80px; }
+    .page-title-ivory { font-family: var(--font-display); font-size: clamp(3rem, 7vw, 7rem); color: var(--ivory); line-height: 0.9; margin-bottom: 32px; }
+    .page-title-noir { font-family: var(--font-display); font-size: clamp(3rem, 7vw, 7rem); color: var(--noir); line-height: 0.9; margin-bottom: 32px; }
+    .page-desc-dark { font-family: var(--font-body); font-size: 18px; color: var(--halide); max-width: 520px; line-height: 1.7; }
+    .page-desc-light { font-family: var(--font-body); font-size: 18px; color: rgba(10,10,10,0.5); max-width: 520px; line-height: 1.7; }
+
+    .events-gallery { padding: 0 0 120px; background: var(--noir); }
+    .event-full { position: relative; overflow: hidden; margin-bottom: 16px; }
+    .event-full img { width: 100%; display: block; transition: filter 0.8s; filter: brightness(0.75); }
+    .event-full:hover img { filter: brightness(1); }
+    .img-21-9 { aspect-ratio: 21/9; overflow: hidden; }
+    .img-21-9 img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.8s, transform 1s; }
+    .event-full:hover .img-21-9 img { filter: brightness(1); transform: scale(1.02); }
+    .gallery-overlay { position: absolute; bottom: 0; left: 0; padding: 32px 40px; }
+    .gallery-overlay .loc { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.2em; }
+    .gallery-overlay .ttl { font-family: var(--font-display); font-size: clamp(1.2rem, 2.5vw, 2.2rem); color: var(--ivory); margin-top: 4px; }
+    .events-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    @media (max-width: 768px) { .events-two-col { grid-template-columns: 1fr; } }
+    .event-item { position: relative; overflow: hidden; }
+    .event-item:nth-child(2) { margin-top: 64px; }
+    .event-item:nth-child(1):only-child { margin-top: 0; }
+    .img-3-4 { aspect-ratio: 3/4; overflow: hidden; }
+    .img-3-4 img, .img-4-3 img, .img-3-2 img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.8s, transform 1s; filter: brightness(0.75); }
+    .img-4-3 { aspect-ratio: 4/3; overflow: hidden; }
+    .img-3-2 { aspect-ratio: 3/2; overflow: hidden; }
+    .event-item:hover img { filter: brightness(1); transform: scale(1.03); }
+
+    .events-cta { background: var(--ivory); padding: 96px 0; text-align: center; }
+    .events-cta h2 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem); color: var(--noir); margin-bottom: 32px; }
+    .btn-dark { display: inline-flex; align-items: center; gap: 16px; background: var(--noir); color: var(--ivory); padding: 20px 48px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em; transition: background 0.2s; cursor: pointer; border: none; }
+    .btn-dark:hover { background: var(--halide); }
+    .btn-light { display: inline-flex; align-items: center; gap: 16px; background: var(--ivory); color: var(--noir); padding: 20px 48px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em; transition: background 0.2s, color 0.2s; cursor: pointer; border: none; }
+    .btn-light:hover { background: var(--halide); color: var(--ivory); }
+
+    /* ══════════════════════════════
+       REAL ESTATE PAGE
+    ══════════════════════════════ */
+    #page-realestate { background: var(--ivory); }
+    .re-gallery { padding: 0 0 120px; background: var(--ivory); }
+    .re-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    @media (max-width: 768px) { .re-grid { grid-template-columns: 1fr; } }
+    .re-item { position: relative; overflow: hidden; }
+    .re-item.span2 { grid-column: span 2; }
+    @media (max-width: 768px) { .re-item.span2 { grid-column: span 1; } }
+    .img-16-9 { aspect-ratio: 16/9; overflow: hidden; }
+    .img-16-9 img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.8s, transform 1s; filter: brightness(0.9); }
+    .re-item img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.8s, transform 1s; filter: brightness(0.9); }
+    .re-item:hover img { filter: brightness(1); transform: scale(1.04); }
+    .re-hover-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px; background: linear-gradient(to top, rgba(10,10,10,0.7), transparent); opacity: 0; transition: opacity 0.4s; }
+    .re-item:hover .re-hover-caption { opacity: 1; }
+    .re-hover-caption .loc { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.2em; }
+    .re-hover-caption .ttl { font-family: var(--font-display); font-size: 20px; color: var(--ivory); margin-top: 4px; }
+    .re-cta { background: var(--noir); padding: 96px 0; text-align: center; }
+    .re-cta h2 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem); color: var(--ivory); margin-bottom: 32px; }
+
+    /* ══════════════════════════════
+       ABOUT PAGE
+    ══════════════════════════════ */
+    #page-about { background: var(--noir); }
+    .about-hero { background: var(--noir); padding: 160px 0 100px; }
+    .about-hero-title { font-family: var(--font-display); font-size: clamp(3rem, 7vw, 7rem); color: var(--ivory); line-height: 0.9; max-width: 800px; }
+    .about-hero-title .muted { color: var(--halide); }
+    .about-story { background: var(--ivory); padding: 100px 0; }
+    .about-story-grid { display: grid; grid-template-columns: 5fr 7fr; gap: 80px; }
+    @media (max-width: 1024px) { .about-story-grid { grid-template-columns: 1fr; gap: 40px; } }
+    .about-story h2 { font-family: var(--font-display); font-size: clamp(2rem, 3.5vw, 3rem); color: var(--noir); line-height: 1; margin-bottom: 24px; }
+    .about-story p { font-family: var(--font-body); font-size: 18px; color: rgba(10,10,10,0.6); line-height: 1.75; margin-bottom: 24px; }
+    .about-process { background: var(--noir); padding: 100px 0; }
+    .process-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 48px; margin-top: 64px; }
+    @media (max-width: 768px) { .process-grid { grid-template-columns: 1fr; } }
+    .process-step { border-top: 1px solid rgba(142,142,142,0.2); padding-top: 32px; }
+    .process-num { font-family: var(--font-mono); color: var(--halide); font-size: 14px; margin-bottom: 16px; }
+    .process-title { font-family: var(--font-display); font-size: 2rem; color: var(--ivory); margin-bottom: 16px; }
+    .process-desc { font-family: var(--font-body); color: rgba(142,142,142,0.8); line-height: 1.7; }
+    .about-cta { background: var(--ivory); padding: 96px 0; text-align: center; }
+    .about-cta h2 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem); color: var(--noir); margin-bottom: 32px; }
+
+    /* ══════════════════════════════
+       CONTACT PAGE
+    ══════════════════════════════ */
+    #page-contact { background: var(--noir); }
+    .contact-hero { background: var(--noir); padding: 160px 0 80px; }
+    .contact-body { background: var(--ivory); padding: 100px 0; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 96px; }
+    @media (max-width: 1024px) { .contact-grid { grid-template-columns: 1fr; gap: 48px; } }
+    .contact-body h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.5rem); color: var(--noir); margin-bottom: 24px; }
+    .contact-body > div > p { font-family: var(--font-body); font-size: 18px; color: rgba(10,10,10,0.6); line-height: 1.7; margin-bottom: 48px; }
+    .contact-info-item { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 32px; }
+    .contact-icon { width: 40px; height: 40px; border: 1px solid rgba(10,10,10,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .contact-icon svg { width: 16px; height: 16px; stroke: rgba(10,10,10,0.4); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .contact-info-label { font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.2em; margin-bottom: 4px; }
+    .contact-info-val { font-family: var(--font-body); font-size: 16px; color: var(--noir); }
+    .contact-info-val a { color: var(--noir); transition: color 0.2s; }
+    .contact-info-val a:hover { color: var(--halide); }
+    .contact-form { display: flex; flex-direction: column; gap: 32px; }
+    .form-field label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.2em; margin-bottom: 12px; }
+    .form-field input, .form-field textarea {
+      width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(10,10,10,0.2);
+      padding-bottom: 12px; font-family: var(--font-body); font-size: 18px; color: var(--noir);
+      outline: none; transition: border-color 0.2s; resize: none;
+    }
+    .form-field input::placeholder, .form-field textarea::placeholder { color: rgba(10,10,10,0.3); }
+    .form-field input:focus, .form-field textarea:focus { border-color: var(--noir); }
+    .form-submit { display: flex; align-items: center; gap: 12px; background: var(--noir); color: var(--ivory); padding: 16px 40px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em; border: none; cursor: pointer; transition: background 0.2s; }
+    .form-submit:hover { background: var(--halide); }
+    .form-success { display: none; font-family: var(--font-mono); font-size: 13px; color: var(--noir); letter-spacing: 0.15em; padding: 16px 0; }
+
+    /* ══════════════════════════════
+       BOOKING PAGE
+    ══════════════════════════════ */
+    #page-booking { background: var(--noir); min-height: 100vh; }
+    .booking-header { padding: 160px 0 48px; background: var(--noir); }
+    .booking-header h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 5rem); color: var(--ivory); line-height: 0.9; }
+    .booking-steps { max-width: 760px; margin: 0 auto 48px; padding: 0 24px; }
+    .step-indicator { display: flex; align-items: center; gap: 16px; }
+    .step-dot { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 10px; flex-shrink: 0; transition: all 0.3s; border: 1px solid rgba(142,142,142,0.3); color: rgba(142,142,142,0.3); }
+    .step-dot.done { background: var(--ivory); color: var(--noir); border-color: var(--ivory); }
+    .step-dot.current { background: var(--ivory); color: var(--noir); border-color: var(--ivory); }
+    .step-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; color: rgba(142,142,142,0.3); transition: color 0.3s; }
+    .step-label.current, .step-label.done { color: var(--ivory); }
+    .step-line { flex: 1; height: 1px; background: rgba(142,142,142,0.2); transition: background 0.3s; }
+    .step-line.done { background: var(--ivory); }
+    .booking-content { max-width: 760px; margin: 0 auto; padding: 0 24px 120px; }
+    .booking-step-panel { display: none; }
+    .booking-step-panel.active { display: block; }
+    .booking-step-title { font-family: var(--font-display); font-size: 2rem; color: var(--ivory); margin-bottom: 32px; }
+
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 540px) { .type-grid { grid-template-columns: 1fr; } }
+    .type-card { padding: 32px; border: 1px solid rgba(142,142,142,0.2); cursor: pointer; transition: border-color 0.2s, background 0.2s; text-align: left; background: transparent; }
+    .type-card:hover { border-color: rgba(142,142,142,0.5); }
+    .type-card.selected { border-color: var(--ivory); background: rgba(249,247,245,0.05); }
+    .type-card svg { width: 24px; height: 24px; stroke: var(--halide); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+    .type-card.selected svg { stroke: var(--ivory); }
+    .type-card h3 { font-family: var(--font-display); font-size: 1.5rem; margin-top: 16px; color: var(--halide); transition: color 0.2s; }
+    .type-card.selected h3 { color: var(--ivory); }
+    .type-card p { font-family: var(--font-body); font-size: 13px; color: rgba(142,142,142,0.6); margin-top: 8px; }
+
+    /* Calendar */
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+    .cal-month { font-family: var(--font-mono); font-size: 14px; color: var(--ivory); letter-spacing: 0.2em; }
+    .cal-nav-btn { background: transparent; border: none; cursor: pointer; padding: 8px; color: var(--halide); transition: color 0.2s; }
+    .cal-nav-btn:hover { color: var(--ivory); }
+    .cal-nav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .cal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 8px; }
+    .cal-wd { font-family: var(--font-mono); font-size: 10px; color: rgba(142,142,142,0.5); letter-spacing: 0.2em; text-align: center; padding: 8px 0; }
+    .cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+    .cal-day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 12px; cursor: pointer;
+      color: var(--halide); transition: all 0.2s; border: 1px solid transparent;
+    }
+    .cal-day:hover:not(.past) { color: var(--ivory); background: rgba(249,247,245,0.1); }
+    .cal-day.past { color: rgba(142,142,142,0.2); cursor: not-allowed; }
+    .cal-day.today:not(.selected) { border-color: rgba(142,142,142,0.4); }
+    .cal-day.selected { background: var(--ivory); color: var(--noir) !important; }
+    .cal-selected-label { font-family: var(--font-mono); font-size: 13px; color: rgba(249,247,245,0.6); text-align: center; margin-top: 24px; letter-spacing: 0.1em; }
+
+    /* Time slots */
+    .time-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .time-btn { padding: 10px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; border: 1px solid rgba(142,142,142,0.2); color: var(--halide); background: transparent; cursor: pointer; transition: all 0.2s; }
+    .time-btn:hover:not(.booked) { border-color: rgba(142,142,142,0.5); color: var(--ivory); }
+    .time-btn.selected { border-color: var(--ivory); background: rgba(249,247,245,0.1); color: var(--ivory); }
+    .time-btn.booked { border-color: rgba(142,142,142,0.1); color: rgba(142,142,142,0.2); cursor: not-allowed; text-decoration: line-through; }
+
+    /* Booking form fields */
+    .booking-form { display: flex; flex-direction: column; gap: 24px; }
+    .bf-label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.2em; margin-bottom: 12px; }
+    .bf-input, .bf-textarea {
+      width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(142,142,142,0.3);
+      padding-bottom: 12px; font-family: var(--font-body); font-size: 18px; color: var(--ivory);
+      outline: none; transition: border-color 0.2s; resize: none;
+    }
+    .bf-input::placeholder, .bf-textarea::placeholder { color: rgba(142,142,142,0.3); }
+    .bf-input:focus, .bf-textarea:focus { border-color: var(--ivory); }
+
+    /* Confirm summary */
+    .confirm-box { border: 1px solid rgba(142,142,142,0.2); padding: 32px; }
+    .confirm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .confirm-row-label { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.2em; margin-bottom: 4px; }
+    .confirm-row-val { font-family: var(--font-body); color: var(--ivory); text-transform: capitalize; }
+
+    .booking-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 48px; padding-top: 32px; border-top: 1px solid rgba(142,142,142,0.1); }
+    .back-btn { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.15em; color: var(--halide); background: transparent; border: none; cursor: pointer; transition: color 0.2s; }
+    .back-btn:hover { color: var(--ivory); }
+    .back-btn.hidden { visibility: hidden; }
+    .next-btn { display: flex; align-items: center; gap: 8px; background: var(--ivory); color: var(--noir); padding: 14px 32px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.15em; border: none; cursor: pointer; transition: background 0.2s, color 0.2s; }
+    .next-btn:hover { background: var(--halide); color: var(--ivory); }
+    .next-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .booking-success { display: none; min-height: 80vh; align-items: center; justify-content: center; padding: 80px 24px; }
+    .booking-success.visible { display: flex; }
+    .booking-success-inner { text-align: center; max-width: 480px; }
+    .success-check { width: 64px; height: 64px; border: 1px solid var(--ivory); display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; }
+    .success-check svg { width: 24px; height: 24px; stroke: var(--ivory); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .success-title { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 3.5rem); color: var(--ivory); margin-bottom: 16px; }
+    .success-date { font-family: var(--font-body); color: var(--halide); font-size: 18px; margin-bottom: 8px; }
+    .success-note { font-family: var(--font-body); color: rgba(142,142,142,0.6); margin-bottom: 40px; }
+
+    /* ─── FOOTER ─── */
+    footer { background: var(--noir); padding: 80px 0 40px; border-top: 1px solid rgba(142,142,142,0.1); }
+    .footer-brand { font-family: var(--font-display); font-size: clamp(3rem, 8vw, 7rem); color: rgba(249,247,245,0.04); letter-spacing: -0.02em; margin-bottom: 48px; }
+    .footer-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 48px; margin-bottom: 64px; }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; gap: 32px; } }
+    .footer-col-label { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.3em; margin-bottom: 16px; }
+    .footer-col a, .footer-col p { display: block; font-family: var(--font-body); font-size: 14px; color: rgba(249,247,245,0.5); margin-bottom: 8px; transition: color 0.2s; }
+    .footer-col a { cursor: pointer; }
+    .footer-col a:hover { color: var(--ivory); }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(142,142,142,0.1); padding-top: 32px; flex-wrap: wrap; gap: 12px; }
+    .footer-copy { font-family: var(--font-mono); font-size: 10px; color: rgba(142,142,142,0.4); letter-spacing: 0.1em; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav id="navbar">
+    <div class="nav-brand" onclick="showPage('home')">NOIR &amp; IVORY</div>
+    <div class="nav-links">
+      <a onclick="showPage('events')">EVENTS</a>
+      <a onclick="showPage('realestate')">REAL ESTATE</a>
+      <a onclick="showPage('about')">ABOUT</a>
+      <a onclick="showPage('contact')">CONTACT</a>
+      <a onclick="showPage('booking')" class="nav-book">BOOK NOW</a>
+    </div>
+    <div class="nav-hamburger" id="hamburger" onclick="openMobile()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <span class="mobile-close" onclick="closeMobile()">✕ CLOSE</span>
+    <a onclick="showPage('events');closeMobile()">Events</a>
+    <a onclick="showPage('realestate');closeMobile()">Real Estate</a>
+    <a onclick="showPage('about');closeMobile()">About</a>
+    <a onclick="showPage('contact');closeMobile()">Contact</a>
+    <a onclick="showPage('booking');closeMobile()">Book a Session</a>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       HOME PAGE
+  ═══════════════════════════════════ -->
+  <div id="page-home" class="page active">
+    <section class="hero">
+      <div class="hero-panel" onclick="showPage('events')" style="cursor:pointer">
+        <img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/904a894d1_generated_086aec4a.png" alt="Event Photography" />
+        <div class="hero-content">
+          <p class="hero-eyebrow">01 — SERVICES</p>
+          <h2 class="hero-title">Event<br>Photography</h2>
+          <div class="hero-sub"><div class="hero-sub-line"></div><span>EXPLORE</span></div>
+        </div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-panel" onclick="showPage('realestate')" style="cursor:pointer">
+        <img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/94bbfd276_generated_c5be5621.png" alt="Real Estate Photography" />
+        <div class="hero-content">
+          <p class="hero-eyebrow">02 — SERVICES</p>
+          <h2 class="hero-title">Real Estate<br>Photography</h2>
+          <div class="hero-sub"><div class="hero-sub-line"></div><span>EXPLORE</span></div>
+        </div>
+      </div>
+      <div class="hero-center">
+        <h1>NOIR <span style="color:var(--halide)">&amp;</span> IVORY</h1>
+        <p>IMAGING</p>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="container">
+        <div class="about-grid">
+          <div class="fade-in">
+            <p class="section-eyebrow">THE PHILOSOPHY</p>
+            <h2 class="about-headline">We don't take<br>photographs.<br><span class="muted">We capture legacies.</span></h2>
+            <p class="about-body">At Noir &amp; Ivory, every frame is a deliberate composition of light, shadow, and emotion. Whether it's the electricity of a gala or the silent geometry of architecture, we transform moments into timeless visual narratives.</p>
+            <span class="text-link" onclick="showPage('about')">
+              OUR STORY
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </span>
+          </div>
+          <div class="stats-grid fade-in delay-1">
+            <div class="stat-card"><p class="stat-number">500+</p><p class="stat-label">EVENTS CAPTURED</p></div>
+            <div class="stat-card"><p class="stat-number">200+</p><p class="stat-label">PROPERTIES SHOT</p></div>
+            <div class="stat-card"><p class="stat-number">8</p><p class="stat-label">YEARS EXPERIENCE</p></div>
+            <div class="stat-card"><p class="stat-number">100%</p><p class="stat-label">CLIENT SATISFACTION</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="portfolio-section">
+      <div class="container">
+        <div class="portfolio-header">
+          <div>
+            <p class="section-eyebrow">SELECTED WORK</p>
+            <h2 class="portfolio-title">Recent Captures</h2>
+          </div>
+          <div class="portfolio-links">
+            <a onclick="showPage('events')">EVENTS <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+            <a onclick="showPage('realestate')">REAL ESTATE <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+          </div>
+        </div>
+        <div class="portfolio-grid">
+          <div class="portfolio-item fade-in">
+            <div class="img-wrap-4-5"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/3d6c4992b_generated_474c3530.png" alt="The Toast" /></div>
+            <div class="portfolio-caption"><p class="caption-cat">EVENT</p><p class="caption-title">The Toast</p></div>
+          </div>
+          <div class="portfolio-item fade-in delay-1">
+            <div class="img-wrap-4-5"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/31dc8256d_generated_86fef3e9.png" alt="Geometric Precision" /></div>
+            <div class="portfolio-caption"><p class="caption-cat">REAL ESTATE</p><p class="caption-title">Geometric Precision</p></div>
+          </div>
+          <div class="portfolio-item fade-in delay-2">
+            <div class="img-wrap-4-5"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/5349423ba_generated_fe09d024.png" alt="The Dance" /></div>
+            <div class="portfolio-caption"><p class="caption-cat">EVENT</p><p class="caption-title">The Dance</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="container">
+        <p class="cta-eyebrow">START YOUR PROJECT</p>
+        <h2 class="cta-headline">Ready to initiate<br><span class="muted">your capture?</span></h2>
+        <button class="cta-btn" onclick="showPage('booking')">BOOK A SESSION <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <div class="footer-brand">NOIR &amp; IVORY</div>
+        <div class="footer-grid">
+          <div class="footer-col">
+            <p class="footer-col-label">NAVIGATION</p>
+            <a onclick="showPage('events')">Events</a>
+            <a onclick="showPage('realestate')">Real Estate</a>
+            <a onclick="showPage('about')">About</a>
+            <a onclick="showPage('contact')">Contact</a>
+            <a onclick="showPage('booking')">Book a Session</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">SERVICES</p>
+            <p>Event Photography</p>
+            <p>Real Estate Photography</p>
+            <p>Architectural Photography</p>
+            <p>Corporate Events</p>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">CONTACT</p>
+            <a href="mailto:noirandivoryimaging@outlook.com">noirandivoryimaging@outlook.com</a>
+            <a href="https://instagram.com/noirandivoryimaging" target="_blank">instagram.com/noirandivoryimaging</a>
+            <p>Los Angeles, CA</p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="footer-copy">© 2026 NOIR &amp; IVORY IMAGING. ALL RIGHTS RESERVED.</p>
+          <p class="footer-copy">CAPTURED AND CRAFTED IN LOS ANGELES</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       EVENTS PAGE
+  ═══════════════════════════════════ -->
+  <div id="page-events" class="page">
+    <div class="page-header-dark">
+      <div class="container">
+        <p class="section-eyebrow">01 — CHRONOS</p>
+        <h1 class="page-title-ivory">Event<br>Photography</h1>
+        <p class="page-desc-dark">We capture the raw energy, the in-between moments, and the electric atmosphere that define unforgettable events. Each frame tells a story that words cannot.</p>
+      </div>
+    </div>
+    <div class="events-gallery">
+      <div class="container">
+        <div class="event-full" style="margin-bottom:16px">
+          <div class="img-21-9"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/7e41f4192_generated_b59da3f7.png" alt="The Ensemble" /></div>
+          <div class="gallery-overlay"><p class="loc">LOS ANGELES, CA — 2024</p><p class="ttl">The Ensemble</p></div>
+        </div>
+        <div class="events-two-col">
+          <div class="event-item">
+            <div class="img-3-4"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/904a894d1_generated_086aec4a.png" alt="The Grand Gala" /></div>
+            <div class="gallery-overlay"><p class="loc">BEVERLY HILLS, CA — 2025</p><p class="ttl">The Grand Gala</p></div>
+          </div>
+          <div class="event-item" style="margin-top:64px">
+            <div class="img-4-3"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/3d6c4992b_generated_474c3530.png" alt="Midnight Toast" /></div>
+            <div class="gallery-overlay"><p class="loc">MALIBU, CA — 2025</p><p class="ttl">Midnight Toast</p></div>
+          </div>
+        </div>
+        <div class="events-two-col">
+          <div class="event-item" style="margin-top:48px">
+            <div class="img-4-3"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/774104f82_generated_2d61880c.png" alt="The Keynote" /></div>
+            <div class="gallery-overlay"><p class="loc">SAN FRANCISCO, CA — 2024</p><p class="ttl">The Keynote</p></div>
+          </div>
+          <div class="event-item">
+            <div class="img-3-2"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/5349423ba_generated_fe09d024.png" alt="First Dance" /></div>
+            <div class="gallery-overlay"><p class="loc">SANTA MONICA, CA — 2025</p><p class="ttl">First Dance</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="events-cta">
+      <div class="container">
+        <h2>Have an event coming up?</h2>
+        <button class="btn-dark" onclick="showPage('booking')">BOOK EVENT PHOTOGRAPHY <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      </div>
+    </div>
+    <footer>
+      <div class="container">
+        <div class="footer-brand">NOIR &amp; IVORY</div>
+        <div class="footer-grid">
+          <div class="footer-col">
+            <p class="footer-col-label">NAVIGATION</p>
+            <a onclick="showPage('home')">Home</a>
+            <a onclick="showPage('realestate')">Real Estate</a>
+            <a onclick="showPage('about')">About</a>
+            <a onclick="showPage('contact')">Contact</a>
+            <a onclick="showPage('booking')">Book a Session</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">SERVICES</p>
+            <p>Event Photography</p><p>Real Estate Photography</p><p>Architectural Photography</p><p>Corporate Events</p>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">CONTACT</p>
+            <a href="mailto:noirandivoryimaging@outlook.com">noirandivoryimaging@outlook.com</a>
+            <p>Los Angeles, CA</p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="footer-copy">© 2026 NOIR &amp; IVORY IMAGING. ALL RIGHTS RESERVED.</p>
+          <p class="footer-copy">CAPTURING LIGHT. DEFINING SPACE.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       REAL ESTATE PAGE
+  ═══════════════════════════════════ -->
+  <div id="page-realestate" class="page">
+    <div class="page-header-light">
+      <div class="container">
+        <p class="section-eyebrow" style="color:rgba(10,10,10,0.4)">02 — SPACE</p>
+        <h1 class="page-title-noir">Real Estate<br>Photography</h1>
+        <p class="page-desc-light">We reveal the architectural soul of every property. Through meticulous composition and dramatic light, we transform spaces into aspirational visual experiences.</p>
+      </div>
+    </div>
+    <div class="re-gallery">
+      <div class="container">
+        <div class="re-grid">
+          <div class="re-item span2">
+            <div class="img-16-9"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/94bbfd276_generated_c5be5621.png" alt="The Glass House" /></div>
+            <div class="re-hover-caption"><p class="loc">PACIFIC PALISADES, CA</p><p class="ttl">The Glass House</p></div>
+          </div>
+          <div class="re-item">
+            <div style="aspect-ratio:4/5;overflow:hidden"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/31dc8256d_generated_86fef3e9.png" alt="Urban Geometry" /></div>
+            <div class="re-hover-caption"><p class="loc">DOWNTOWN LA, CA</p><p class="ttl">Urban Geometry</p></div>
+          </div>
+          <div class="re-item">
+            <div style="aspect-ratio:4/5;overflow:hidden"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/d75c40782_generated_0fd83e1a.png" alt="Light & Space" /></div>
+            <div class="re-hover-caption"><p class="loc">VENICE, CA</p><p class="ttl">Light &amp; Space</p></div>
+          </div>
+          <div class="re-item">
+            <div style="aspect-ratio:4/5;overflow:hidden"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/8c0e36fe1_generated_c2a3d96f.png" alt="The Kitchen Studio" /></div>
+            <div class="re-hover-caption"><p class="loc">BEVERLY HILLS, CA</p><p class="ttl">The Kitchen Studio</p></div>
+          </div>
+          <div class="re-item">
+            <div style="aspect-ratio:4/5;overflow:hidden"><img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/fc90b43bb_generated_9f0ea1f3.png" alt="Estate Aerial" /></div>
+            <div class="re-hover-caption"><p class="loc">BEL AIR, CA</p><p class="ttl">Estate Aerial</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="re-cta">
+      <h2>Listing a property?</h2>
+      <button class="btn-light" onclick="showPage('booking')">BOOK PROPERTY SHOOT <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+    </div>
+    <footer>
+      <div class="container">
+        <div class="footer-brand">NOIR &amp; IVORY</div>
+        <div class="footer-grid">
+          <div class="footer-col">
+            <p class="footer-col-label">NAVIGATION</p>
+            <a onclick="showPage('home')">Home</a>
+            <a onclick="showPage('events')">Events</a>
+            <a onclick="showPage('about')">About</a>
+            <a onclick="showPage('contact')">Contact</a>
+            <a onclick="showPage('booking')">Book a Session</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">SERVICES</p>
+            <p>Event Photography</p><p>Real Estate Photography</p><p>Architectural Photography</p><p>Corporate Events</p>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">CONTACT</p>
+            <a href="mailto:noirandivoryimaging@outlook.com">noirandivoryimaging@outlook.com</a>
+            <p>Los Angeles, CA</p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="footer-copy">© 2026 NOIR &amp; IVORY IMAGING. ALL RIGHTS RESERVED.</p>
+          <p class="footer-copy">CAPTURING LIGHT. DEFINING SPACE.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       ABOUT PAGE
+  ═══════════════════════════════════ -->
+  <div id="page-about" class="page">
+    <div class="about-hero">
+      <div class="container">
+        <p class="section-eyebrow">ABOUT US</p>
+        <h1 class="about-hero-title">The eye behind<br><span class="muted">the lens</span></h1>
+      </div>
+    </div>
+    <div class="about-story">
+      <div class="container">
+        <div class="about-story-grid">
+          <div>
+            <p class="section-eyebrow">OUR STORY</p>
+            <h2>Born from a passion for light and shadow</h2>
+          </div>
+          <div>
+            <p>Noir &amp; Ivory Imaging was founded on a simple belief: photography is not about capturing what is — it's about revealing what could be. We see the world in contrasts, in the interplay between darkness and light, between silence and movement.</p>
+            <p>Our dual focus on event and real estate photography stems from a fascination with two fundamental aspects of human experience — the moments we share and the spaces we inhabit. In both, we find stories waiting to be told through the language of light.</p>
+            <p>Based in Los Angeles, we bring a cinematic sensibility to every shoot. Our monochromatic approach isn't a limitation — it's a liberation. By stripping away color, we reveal the essential architecture of each moment, the raw geometry of emotion and space.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="about-process">
+      <div class="container">
+        <p class="section-eyebrow">THE PROCESS</p>
+        <div class="process-grid">
+          <div class="process-step">
+            <p class="process-num">01</p>
+            <h3 class="process-title">Consultation</h3>
+            <p class="process-desc">We begin with a detailed conversation to understand your vision, the space, and the story you want to tell.</p>
+          </div>
+          <div class="process-step">
+            <p class="process-num">02</p>
+            <h3 class="process-title">The Capture</h3>
+            <p class="process-desc">On the day, we work with precision and intuition — reading light, anticipating moments, and composing each frame with intention.</p>
+          </div>
+          <div class="process-step">
+            <p class="process-num">03</p>
+            <h3 class="process-title">The Develop</h3>
+            <p class="process-desc">Every image is meticulously processed in our digital darkroom, crafting the final visual narrative with care and artistry.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="about-cta">
+      <div class="container">
+        <h2>Let's create together</h2>
+        <button class="btn-dark" onclick="showPage('booking')">BOOK A SESSION <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      </div>
+    </div>
+    <footer>
+      <div class="container">
+        <div class="footer-brand">NOIR &amp; IVORY</div>
+        <div class="footer-grid">
+          <div class="footer-col">
+            <p class="footer-col-label">NAVIGATION</p>
+            <a onclick="showPage('home')">Home</a>
+            <a onclick="showPage('events')">Events</a>
+            <a onclick="showPage('realestate')">Real Estate</a>
+            <a onclick="showPage('contact')">Contact</a>
+            <a onclick="showPage('booking')">Book a Session</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">SERVICES</p>
+            <p>Event Photography</p><p>Real Estate Photography</p><p>Architectural Photography</p><p>Corporate Events</p>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">CONTACT</p>
+            <a href="mailto:noirandivoryimaging@outlook.com">noirandivoryimaging@outlook.com</a>
+            <p>Los Angeles, CA</p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="footer-copy">© 2026 NOIR &amp; IVORY IMAGING. ALL RIGHTS RESERVED.</p>
+          <p class="footer-copy">CAPTURING LIGHT. DEFINING SPACE.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       CONTACT PAGE
+  ═══════════════════════════════════ -->
+  <div id="page-contact" class="page">
+    <div class="contact-hero">
+      <div class="container">
+        <p class="section-eyebrow">GET IN TOUCH</p>
+        <h1 class="page-title-ivory">Contact</h1>
+      </div>
+    </div>
+    <div class="contact-body">
+      <div class="container">
+        <div class="contact-grid">
+          <div>
+            <h2>Let's discuss your vision</h2>
+            <p>Whether you have a grand event approaching or a property ready to be showcased, we'd love to hear from you. Reach out and let's start creating something extraordinary.</p>
+            <div class="contact-info-item">
+              <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <div>
+                <p class="contact-info-label">LOCATION</p>
+                <p class="contact-info-val">Los Angeles, California</p>
+              </div>
+            </div>
+            <div class="contact-info-item">
+              <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div>
+                <p class="contact-info-label">EMAIL</p>
+                <p class="contact-info-val"><a href="mailto:noirandivoryimaging@outlook.com">noirandivoryimaging@outlook.com</a></p>
+              </div>
+            </div>
+            <div class="contact-info-item">
+              <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.57 3.39a2 2 0 0 1 2-2.18h3A2 2 0 0 1 8.5 3a12.2 12.2 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91A16 16 0 0 0 14.09 16l1.34-1.34a2 2 0 0 1 2.11-.45A12.2 12.2 0 0 0 20.35 15a2 2 0 0 1 2.57 1.92z"/></svg>
+              </div>
+              <div>
+                <p class="contact-info-label">PHONE</p>
+                <p class="contact-info-val">+1 (555) 987-6543</p>
+              </div>
+            </div>
+          </div>
+          <form class="contact-form" id="contact-form" onsubmit="submitContact(event)">
+            <div class="form-field">
+              <label>YOUR NAME</label>
+              <input type="text" required placeholder="John Doe" />
+            </div>
+            <div class="form-field">
+              <label>YOUR EMAIL</label>
+              <input type="email" required placeholder="john@example.com" />
+            </div>
+            <div class="form-field">
+              <label>MESSAGE</label>
+              <textarea rows="5" required placeholder="Tell us about your project..."></textarea>
+            </div>
+            <button type="submit" class="form-submit">
+              SEND MESSAGE
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+            <p class="form-success" id="contact-success">✓ &nbsp; MESSAGE SENT SUCCESSFULLY</p>
+          </form>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="container">
+        <div class="footer-brand">NOIR &amp; IVORY</div>
+        <div class="footer-grid">
+          <div class="footer-col">
+            <p class="footer-col-label">NAVIGATION</p>
+            <a onclick="showPage('home')">Home</a>
+            <a onclick="showPage('events')">Events</a>
+            <a onclick="showPage('realestate')">Real Estate</a>
+            <a onclick="showPage('about')">About</a>
+            <a onclick="showPage('booking')">Book a Session</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">SERVICES</p>
+            <p>Event Photography</p><p>Real Estate Photography</p><p>Architectural Photography</p><p>Corporate Events</p>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">CONTACT</p>
+            <a href="mailto:noirandivoryimaging@outlook.com">noirandivoryimaging@outlook.com</a>
+            <p>Los Angeles, CA</p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="footer-copy">© 2026 NOIR &amp; IVORY IMAGING. ALL RIGHTS RESERVED.</p>
+          <p class="footer-copy">CAPTURING LIGHT. DEFINING SPACE.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       BOOKING PAGE
+  ═══════════════════════════════════ -->
+  <div id="page-booking" class="page">
+    <div id="booking-flow">
+      <div class="booking-header">
+        <div class="container">
+          <p class="section-eyebrow">BOOKING</p>
+          <h1>Initiate Capture</h1>
+        </div>
+      </div>
+
+      <div class="booking-steps">
+        <div class="step-indicator" id="step-indicator">
+          <div class="step-dot current" id="sd-0">1</div>
+          <span class="step-label current" id="sl-0">TYPE</span>
+          <div class="step-line" id="sl-line-0"></div>
+          <div class="step-dot" id="sd-1">2</div>
+          <span class="step-label" id="sl-1">DATE</span>
+          <div class="step-line" id="sl-line-1"></div>
+          <div class="step-dot" id="sd-2">3</div>
+          <span class="step-label" id="sl-2">DETAILS</span>
+          <div class="step-line" id="sl-line-2"></div>
+          <div class="step-dot" id="sd-3">4</div>
+          <span class="step-label" id="sl-3">CONFIRM</span>
+        </div>
+      </div>
+
+      <div class="booking-content">
+        <!-- Step 0: Type -->
+        <div class="booking-step-panel active" id="bstep-0">
+          <h2 class="booking-step-title">Select shoot type</h2>
+          <div class="type-grid">
+            <button class="type-card" id="type-event" onclick="selectType('event')">
+              <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <h3>Event Photography</h3>
+              <p>Galas, weddings, corporate events, concerts</p>
+            </button>
+            <button class="type-card" id="type-real_estate" onclick="selectType('real_estate')">
+              <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <h3>Property Photography</h3>
+              <p>Residential, commercial, architectural</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 1: Date -->
+        <div class="booking-step-panel" id="bstep-1">
+          <h2 class="booking-step-title">Choose your date</h2>
+          <div id="calendar-container"></div>
+          <p class="cal-selected-label" id="cal-selected-label"></p>
+        </div>
+
+        <!-- Step 2: Details -->
+        <div class="booking-step-panel" id="bstep-2">
+          <h2 class="booking-step-title">Your details</h2>
+          <div class="booking-form">
+            <div>
+              <label class="bf-label">FULL NAME *</label>
+              <input class="bf-input" type="text" id="bf-name" placeholder="Your full name" />
+            </div>
+            <div>
+              <label class="bf-label">EMAIL *</label>
+              <input class="bf-input" type="email" id="bf-email" placeholder="your@email.com" />
+            </div>
+            <div>
+              <label class="bf-label">PHONE</label>
+              <input class="bf-input" type="tel" id="bf-phone" placeholder="+1 (555) 000-0000" />
+            </div>
+            <div>
+              <label class="bf-label">LOCATION / VENUE</label>
+              <input class="bf-input" type="text" id="bf-location" placeholder="Venue name or address" />
+            </div>
+            <div>
+              <label class="bf-label">PREFERRED TIME</label>
+              <div class="time-grid" id="time-grid"></div>
+            </div>
+            <div>
+              <label class="bf-label">ADDITIONAL DETAILS</label>
+              <textarea class="bf-textarea" id="bf-details" rows="3" placeholder="Tell us about your project..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Confirm -->
+        <div class="booking-step-panel" id="bstep-3">
+          <h2 class="booking-step-title">Review &amp; confirm</h2>
+          <div class="confirm-box">
+            <div class="confirm-grid" id="confirm-grid"></div>
+            <div id="confirm-details-row"></div>
+          </div>
+        </div>
+
+        <div class="booking-nav">
+          <button class="back-btn hidden" id="booking-back" onclick="bookingBack()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            BACK
+          </button>
+          <button class="next-btn" id="booking-next" onclick="bookingNext()" disabled>
+            CONTINUE
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success State -->
+    <div class="booking-success" id="booking-success">
+      <div class="booking-success-inner">
+        <div class="success-check">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 class="success-title">Capture Initiated</h2>
+        <p class="success-date" id="success-date"></p>
+        <p class="success-note">We'll reach out within 24 hours to confirm your session details.</p>
+        <span class="text-link" style="color:var(--halide);border-color:var(--halide)" onclick="showPage('home')">RETURN HOME</span>
+      </div>
+    </div>
+
+    <footer>
+      <div class="container">
+        <div class="footer-brand">NOIR &amp; IVORY</div>
+        <div class="footer-grid">
+          <div class="footer-col">
+            <p class="footer-col-label">NAVIGATION</p>
+            <a onclick="showPage('home')">Home</a>
+            <a onclick="showPage('events')">Events</a>
+            <a onclick="showPage('realestate')">Real Estate</a>
+            <a onclick="showPage('about')">About</a>
+            <a onclick="showPage('contact')">Contact</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">SERVICES</p>
+            <p>Event Photography</p><p>Real Estate Photography</p><p>Architectural Photography</p><p>Corporate Events</p>
+          </div>
+          <div class="footer-col">
+            <p class="footer-col-label">CONTACT</p>
+            <a href="mailto:noirandivoryimaging@outlook.com">noirandivoryimaging@outlook.com</a>
+            <p>Los Angeles, CA</p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="footer-copy">© 2026 NOIR &amp; IVORY IMAGING. ALL RIGHTS RESERVED.</p>
+          <p class="footer-copy">CAPTURING LIGHT. DEFINING SPACE.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ─── PAGE ROUTER ───
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      window.scrollTo(0, 0);
+      // update nav active link
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active-link'));
+      const map = { home: 0, events: 0, realestate: 1, about: 2, contact: 3, booking: 4 };
+      if (map[id] !== undefined) document.querySelectorAll('.nav-links a')[map[id]]?.classList.add('active-link');
+      // re-trigger fade-ins
+      document.querySelectorAll('#page-' + id + ' .fade-in').forEach(el => {
+        el.classList.remove('visible');
+        setTimeout(() => observer.observe(el), 50);
+      });
+      // if booking, reset
+      if (id === 'booking') resetBooking();
+    }
+
+    // ─── NAVBAR SCROLL ───
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50));
+
+    // ─── MOBILE MENU ───
+    function openMobile() { document.getElementById('mobile-menu').classList.add('open'); }
+    function closeMobile() { document.getElementById('mobile-menu').classList.remove('open'); }
+
+    // ─── FADE-IN OBSERVER ───
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // ─── CONTACT FORM ───
+    function submitContact(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'SENDING...';
+      btn.disabled = true;
+      setTimeout(() => {
+        e.target.reset();
+        btn.style.display = 'none';
+        document.getElementById('contact-success').style.display = 'block';
+      }, 1000);
+    }
+
+    // ─── BOOKING ENGINE ───
+    const TIME_SLOTS = ['09:00 AM','10:00 AM','11:00 AM','12:00 PM','01:00 PM','02:00 PM','03:00 PM','04:00 PM','05:00 PM'];
+    const MONTHS = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+    const DAYS_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    let bState = { step: 0, type: null, date: null, time: null, name: '', email: '', phone: '', location: '', details: '' };
+    let calMonth, calYear;
+
+    function resetBooking() {
+      bState = { step: 0, type: null, date: null, time: null, name: '', email: '', phone: '', location: '', details: '' };
+      document.getElementById('booking-flow').style.display = 'block';
+      document.getElementById('booking-success').classList.remove('visible');
+      document.querySelectorAll('.booking-step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('bstep-0').classList.add('active');
+      document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('bf-name').value = '';
+      document.getElementById('bf-email').value = '';
+      document.getElementById('bf-phone').value = '';
+      document.getElementById('bf-location').value = '';
+      document.getElementById('bf-details').value = '';
+      document.getElementById('cal-selected-label').textContent = '';
+      const now = new Date();
+      calMonth = now.getMonth(); calYear = now.getFullYear();
+      renderCalendar();
+      renderTimeSlots();
+      updateStepUI();
+      updateNextBtn();
+    }
+
+    function selectType(type) {
+      bState.type = type;
+      document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('type-' + type).classList.add('selected');
+      updateNextBtn();
+    }
+
+    function renderCalendar() {
+      const container = document.getElementById('calendar-container');
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const today = new Date(); today.setHours(0,0,0,0);
+
+      let html = `<div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calPrev()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <span class="cal-month">${MONTHS[calMonth]} ${calYear}</span>
+        <button class="cal-nav-btn" onclick="calNext()"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="cal-weekdays">`;
+      ['SU','MO','TU','WE','TH','FR','SA'].forEach(d => html += `<div class="cal-wd">${d}</div>`);
+      html += `</div><div class="cal-days">`;
+      for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(calYear, calMonth, d);
+        const isPast = date < today;
+        const isToday = date.toDateString() === today.toDateString();
+        const isSelected = bState.date && date.toDateString() === bState.date.toDateString();
+        let cls = 'cal-day';
+        if (isPast) cls += ' past';
+        if (isToday && !isSelected) cls += ' today';
+        if (isSelected) cls += ' selected';
+        html += `<div class="${cls}" ${!isPast ? `onclick="selectDate(${d})"` : ''}>${d}</div>`;
+      }
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function calPrev() {
+      calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    }
+    function calNext() {
+      calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    }
+
+    function selectDate(d) {
+      bState.date = new Date(calYear, calMonth, d);
+      bState.time = null;
+      const label = `${DAYS_FULL[bState.date.getDay()]}, ${MONTHS_FULL[bState.date.getMonth()]} ${d}, ${calYear}`;
+      document.getElementById('cal-selected-label').textContent = 'Selected: ' + label;
+      renderCalendar();
+      renderTimeSlots();
+      updateNextBtn();
+    }
+
+    function renderTimeSlots() {
+      const grid = document.getElementById('time-grid');
+      grid.innerHTML = TIME_SLOTS.map(t => {
+        const isSel = bState.time === t;
+        return `<button class="time-btn${isSel ? ' selected' : ''}" onclick="selectTime('${t}')">${t}</button>`;
+      }).join('');
+    }
+
+    function selectTime(t) {
+      bState.time = t;
+      renderTimeSlots();
+    }
+
+    function updateNextBtn() {
+      const btn = document.getElementById('booking-next');
+      const can = [
+        () => !!bState.type,
+        () => !!bState.date,
+        () => !!(document.getElementById('bf-name')?.value.trim() && document.getElementById('bf-email')?.value.trim()),
+        () => true
+      ];
+      btn.disabled = !can[bState.step]?.();
+    }
+
+    function updateStepUI() {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById('sd-' + i);
+        const lbl = document.getElementById('sl-' + i);
+        dot.className = 'step-dot' + (i < bState.step ? ' done' : i === bState.step ? ' current' : '');
+        dot.innerHTML = i < bState.step ? '✓' : (i + 1);
+        lbl.className = 'step-label' + (i <= bState.step ? (i < bState.step ? ' done' : ' current') : '');
+        if (i < 3) {
+          const line = document.getElementById('sl-line-' + i);
+          line.className = 'step-line' + (i < bState.step ? ' done' : '');
+        }
+      }
+      const backBtn = document.getElementById('booking-back');
+      backBtn.classList.toggle('hidden', bState.step === 0);
+      const nextBtn = document.getElementById('booking-next');
+      nextBtn.innerHTML = bState.step === 3
+        ? 'INITIATE CAPTURE <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>'
+        : 'CONTINUE <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+    }
+
+    function bookingNext() {
+      if (bState.step === 2) {
+        bState.name = document.getElementById('bf-name').value.trim();
+        bState.email = document.getElementById('bf-email').value.trim();
+        bState.phone = document.getElementById('bf-phone').value.trim();
+        bState.location = document.getElementById('bf-location').value.trim();
+        bState.details = document.getElementById('bf-details').value.trim();
+      }
+      if (bState.step === 3) { submitBooking(); return; }
+      document.getElementById('bstep-' + bState.step).classList.remove('active');
+      bState.step++;
+      document.getElementById('bstep-' + bState.step).classList.add('active');
+      if (bState.step === 3) renderConfirm();
+      updateStepUI();
+      updateNextBtn();
+      window.scrollTo(0, 0);
+    }
+
+    function bookingBack() {
+      document.getElementById('bstep-' + bState.step).classList.remove('active');
+      bState.step--;
+      document.getElementById('bstep-' + bState.step).classList.add('active');
+      updateStepUI();
+      updateNextBtn();
+      window.scrollTo(0, 0);
+    }
+
+    function renderConfirm() {
+      const d = bState.date;
+      const dateStr = d ? `${MONTHS_FULL[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}` : '';
+      const rows = [
+        ['SHOOT TYPE', (bState.type || '').replace('_',' ')],
+        ['DATE', dateStr],
+        ['TIME', bState.time || 'Flexible'],
+        ['LOCATION', bState.location || 'TBD'],
+        ['NAME', bState.name],
+        ['EMAIL', bState.email],
+      ];
+      document.getElementById('confirm-grid').innerHTML = rows.map(([l,v]) =>
+        `<div><p class="confirm-row-label">${l}</p><p class="confirm-row-val">${v}</p></div>`
+      ).join('');
+      document.getElementById('confirm-details-row').innerHTML = bState.details
+        ? `<div style="border-top:1px solid rgba(142,142,142,0.15);padding-top:20px;margin-top:4px">
+            <p class="confirm-row-label">DETAILS</p>
+            <p class="confirm-row-val" style="opacity:0.8">${bState.details}</p>
+           </div>` : '';
+    }
+
+    function submitBooking() {
+      const btn = document.getElementById('booking-next');
+      btn.textContent = 'PROCESSING...';
+      btn.disabled = true;
+      setTimeout(() => {
+        const d = bState.date;
+        const dateStr = d ? `${DAYS_FULL[d.getDay()]}, ${MONTHS_FULL[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}` : '';
+        document.getElementById('success-date').textContent = dateStr + (bState.time ? ` at ${bState.time}` : '');
+        document.getElementById('booking-flow').style.display = 'none';
+        document.getElementById('booking-success').classList.add('visible');
+        window.scrollTo(0, 0);
+      }, 1200);
+    }
+
+    // Step 2 inputs live validation
+    document.addEventListener('input', e => {
+      if (['bf-name','bf-email'].includes(e.target.id)) updateNextBtn();
+    });
+
+    // Init booking
+    const now = new Date();
+    calMonth = now.getMonth(); calYear = now.getFullYear();
+    renderCalendar();
+    renderTimeSlots();
+    updateStepUI();
+    updateNextBtn();
+  </script>
+</body>
+</html>
