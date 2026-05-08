@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noir & Ivory Imaging</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --noir: #0A0A0A;
+      --ivory: #F9F7F5;
+      --halide: #8E8E8E;
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--noir); color: var(--ivory); overflow-x: hidden; }
+
+    ::selection { background: var(--noir); color: var(--ivory); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: #8E8E8E; }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+    nav.scrolled { background: rgba(10,10,10,0.85); backdrop-filter: blur(10px); }
+    .nav-brand { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.15em; color: var(--ivory); }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; color: var(--halide); transition: color 0.2s; }
+    .nav-links a:hover { color: var(--ivory); }
+    .nav-book {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
+      border: 1px solid var(--ivory); color: var(--ivory);
+      padding: 10px 20px; transition: background 0.2s, color 0.2s;
+    }
+    .nav-book:hover { background: var(--ivory); color: var(--noir); }
+
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+    }
+
+    /* ─── HERO SPLIT ─── */
+    .hero { display: flex; height: 100vh; position: relative; overflow: hidden; }
+    .hero-panel {
+      flex: 1; position: relative; overflow: hidden; cursor: pointer;
+      transition: flex 0.8s cubic-bezier(0.76,0,0.24,1);
+    }
+    .hero-panel:hover { flex: 1.5; }
+    .hero-panel:hover ~ .hero-panel,
+    .hero:has(.hero-panel:hover) .hero-panel:not(:hover) { flex: 0.7; }
+    .hero-panel img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 1.5s ease, filter 0.5s ease;
+      filter: brightness(0.6);
+    }
+    .hero-panel:hover img { transform: scale(1.05); filter: brightness(0.85); }
+    .hero-divider { width: 1px; background: rgba(142,142,142,0.3); z-index: 10; flex-shrink: 0; }
+    .hero-overlay { position: absolute; inset: 0; }
+    .hero-content {
+      position: relative; height: 100%;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 64px;
+    }
+    .hero-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.3em; margin-bottom: 12px; }
+    .hero-title { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4.5rem); color: var(--ivory); line-height: 0.9; }
+    .hero-sub { display: flex; align-items: center; gap: 12px; margin-top: 24px; }
+    .hero-sub-line { width: 48px; height: 1px; background: rgba(249,247,245,0.4); }
+    .hero-sub span { font-family: var(--font-mono); font-size: 11px; color: rgba(249,247,245,0.6); letter-spacing: 0.3em; }
+
+    .hero-center {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 20; text-align: center; pointer-events: none;
+    }
+    .hero-center h1 { font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2.5rem); color: var(--ivory); letter-spacing: 0.15em; }
+    .hero-center p { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.4em; margin-top: 8px; }
+
+    @media (max-width: 768px) {
+      .hero { flex-direction: column; }
+      .hero-divider { width: 100%; height: 1px; }
+      .hero-content { padding: 32px 24px; }
+    }
+
+    /* ─── ABOUT TEASER ─── */
+    .about-section { background: var(--ivory); padding: 120px 0; }
+    .container { max-width: 1600px; margin: 0 auto; padding: 0 48px; }
+    @media (max-width: 768px) { .container { padding: 0 24px; } }
+
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 96px; align-items: center; }
+    @media (max-width: 1024px) { .about-grid { grid-template-columns: 1fr; gap: 48px; } }
+
+    .section-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.3em; margin-bottom: 24px; }
+    .about-headline {
+      font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.5rem);
+      color: var(--noir); line-height: 1; margin-bottom: 32px;
+    }
+    .about-headline .muted { color: var(--halide); }
+    .about-body { font-family: var(--font-body); font-size: 18px; color: rgba(10,10,10,0.6); line-height: 1.7; max-width: 480px; margin-bottom: 40px; }
+    .text-link {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.15em;
+      color: var(--noir); border-bottom: 1px solid var(--noir); padding-bottom: 4px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .text-link:hover { color: var(--halide); border-color: var(--halide); }
+    .text-link svg { transition: transform 0.2s; }
+    .text-link:hover svg { transform: translateX(4px); }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .stat-card { text-align: center; padding: 32px; border: 1px solid rgba(10,10,10,0.1); }
+    .stat-number { font-family: var(--font-display); font-size: 48px; color: var(--noir); }
+    .stat-label { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.2em; margin-top: 8px; }
+
+    /* ─── PORTFOLIO PREVIEW ─── */
+    .portfolio-section { background: var(--noir); padding: 120px 0; }
+    .portfolio-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 64px; flex-wrap: wrap; gap: 24px; }
+    .portfolio-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.5rem); color: var(--ivory); line-height: 1; }
+    .portfolio-links { display: flex; gap: 24px; }
+    .portfolio-links a { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.15em; color: var(--halide); display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+    .portfolio-links a:hover { color: var(--ivory); }
+    .portfolio-links a:hover svg { transform: translateX(3px); }
+    .portfolio-links svg { transition: transform 0.2s; }
+
+    .portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 768px) { .portfolio-grid { grid-template-columns: 1fr; } }
+
+    .portfolio-item { position: relative; overflow: hidden; cursor: pointer; }
+    .portfolio-item:nth-child(2) { margin-top: 64px; }
+    .portfolio-item .img-wrap { aspect-ratio: 4/5; overflow: hidden; }
+    .portfolio-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease, filter 0.7s ease; filter: brightness(0.75); }
+    .portfolio-item:hover img { transform: scale(1.05); filter: brightness(1); }
+    .portfolio-caption {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 24px;
+      background: linear-gradient(to top, rgba(10,10,10,0.8), transparent);
+    }
+    .caption-cat { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.2em; }
+    .caption-title { font-family: var(--font-display); font-size: 20px; color: var(--ivory); margin-top: 4px; }
+
+    /* ─── CTA ─── */
+    .cta-section { background: var(--ivory); padding: 120px 0; text-align: center; }
+    .cta-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--halide); letter-spacing: 0.3em; margin-bottom: 32px; }
+    .cta-headline {
+      font-family: var(--font-display); font-size: clamp(3rem, 7vw, 6rem);
+      color: var(--noir); line-height: 0.9; max-width: 700px; margin: 0 auto 48px;
+    }
+    .cta-headline .muted { color: var(--halide); }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 16px;
+      background: var(--noir); color: var(--ivory);
+      padding: 20px 48px;
+      font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em;
+      transition: background 0.2s;
+    }
+    .cta-btn:hover { background: var(--halide); }
+    .cta-btn svg { transition: transform 0.2s; }
+    .cta-btn:hover svg { transform: translateX(6px); }
+
+    /* ─── FOOTER ─── */
+    footer { background: var(--noir); padding: 80px 0 40px; border-top: 1px solid rgba(142,142,142,0.1); }
+    .footer-brand { font-family: var(--font-display); font-size: clamp(3rem, 8vw, 7rem); color: rgba(249,247,245,0.04); letter-spacing: -0.02em; margin-bottom: 48px; }
+    .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; margin-bottom: 64px; }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; gap: 32px; } }
+    .footer-col-label { font-family: var(--font-mono); font-size: 10px; color: var(--halide); letter-spacing: 0.3em; margin-bottom: 16px; }
+    .footer-col a, .footer-col p {
+      display: block; font-family: var(--font-body); font-size: 14px;
+      color: rgba(249,247,245,0.5); margin-bottom: 8px; transition: color 0.2s;
+    }
+    .footer-col a:hover { color: var(--ivory); }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(142,142,142,0.1); padding-top: 32px; flex-wrap: wrap; gap: 12px; }
+    .footer-copy { font-family: var(--font-mono); font-size: 10px; color: rgba(142,142,142,0.4); letter-spacing: 0.1em; }
+
+    /* ─── FADE-IN ANIMATION ─── */
+    .fade-in { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .fade-in-delay-1 { transition-delay: 0.15s; }
+    .fade-in-delay-2 { transition-delay: 0.3s; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="#" class="nav-brand">NOIR &amp; IVORY</a>
+    <div class="nav-links">
+      <a href="events.html">EVENTS</a>
+      <a href="real-estate.html">REAL ESTATE</a>
+      <a href="about.html">ABOUT</a>
+      <a href="contact.html">CONTACT</a>
+      <a href="booking.html" class="nav-book">BOOK NOW</a>
+    </div>
+  </nav>
+
+  <!-- HERO SPLIT -->
+  <section class="hero">
+    <a href="events.html" class="hero-panel">
+      <img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/904a894d1_generated_086aec4a.png" alt="Event Photography" />
+      <div class="hero-content">
+        <p class="hero-eyebrow">01 — SERVICES</p>
+        <h2 class="hero-title">Event<br>Photography</h2>
+        <div class="hero-sub">
+          <div class="hero-sub-line"></div>
+          <span>EXPLORE</span>
+        </div>
+      </div>
+    </a>
+
+    <div class="hero-divider"></div>
+
+    <a href="real-estate.html" class="hero-panel">
+      <img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/94bbfd276_generated_c5be5621.png" alt="Real Estate Photography" />
+      <div class="hero-content">
+        <p class="hero-eyebrow">02 — SERVICES</p>
+        <h2 class="hero-title">Real Estate<br>Photography</h2>
+        <div class="hero-sub">
+          <div class="hero-sub-line"></div>
+          <span>EXPLORE</span>
+        </div>
+      </div>
+    </a>
+
+    <div class="hero-center">
+      <h1>NOIR <span style="color:var(--halide)">&amp;</span> IVORY</h1>
+      <p>IMAGING</p>
+    </div>
+  </section>
+
+  <!-- ABOUT TEASER -->
+  <section class="about-section">
+    <div class="container">
+      <div class="about-grid">
+        <div class="fade-in">
+          <p class="section-eyebrow">THE PHILOSOPHY</p>
+          <h2 class="about-headline">
+            We don't take<br>photographs.<br>
+            <span class="muted">We capture legacies.</span>
+          </h2>
+          <p class="about-body">
+            At Noir &amp; Ivory, every frame is a deliberate composition of light, shadow, and emotion.
+            Whether it's the electricity of a gala or the silent geometry of architecture, we transform
+            moments into timeless visual narratives.
+          </p>
+          <a href="about.html" class="text-link">
+            OUR STORY
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+        <div class="stats-grid fade-in fade-in-delay-1">
+          <div class="stat-card">
+            <p class="stat-number">500+</p>
+            <p class="stat-label">EVENTS CAPTURED</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-number">200+</p>
+            <p class="stat-label">PROPERTIES SHOT</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-number">8</p>
+            <p class="stat-label">YEARS EXPERIENCE</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-number">100%</p>
+            <p class="stat-label">CLIENT SATISFACTION</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO PREVIEW -->
+  <section class="portfolio-section">
+    <div class="container">
+      <div class="portfolio-header">
+        <div>
+          <p class="section-eyebrow" style="color:var(--halide)">SELECTED WORK</p>
+          <h2 class="portfolio-title">Recent Captures</h2>
+        </div>
+        <div class="portfolio-links">
+          <a href="events.html">
+            EVENTS
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <a href="real-estate.html">
+            REAL ESTATE
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="portfolio-grid">
+        <div class="portfolio-item fade-in">
+          <div class="img-wrap">
+            <img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/3d6c4992b_generated_474c3530.png" alt="The Toast" />
+          </div>
+          <div class="portfolio-caption">
+            <p class="caption-cat">EVENT</p>
+            <p class="caption-title">The Toast</p>
+          </div>
+        </div>
+        <div class="portfolio-item fade-in fade-in-delay-1">
+          <div class="img-wrap">
+            <img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/31dc8256d_generated_86fef3e9.png" alt="Geometric Precision" />
+          </div>
+          <div class="portfolio-caption">
+            <p class="caption-cat">REAL ESTATE</p>
+            <p class="caption-title">Geometric Precision</p>
+          </div>
+        </div>
+        <div class="portfolio-item fade-in fade-in-delay-2">
+          <div class="img-wrap">
+            <img src="https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/5349423ba_generated_fe09d024.png" alt="The Dance" />
+          </div>
+          <div class="portfolio-caption">
+            <p class="caption-cat">EVENT</p>
+            <p class="caption-title">The Dance</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <p class="cta-eyebrow">START YOUR PROJECT</p>
+      <h2 class="cta-headline">
+        Ready to initiate<br>
+        <span class="muted">your capture?</span>
+      </h2>
+      <a href="booking.html" class="cta-btn">
+        BOOK A SESSION
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-brand">NOIR &amp; IVORY</div>
+      <div class="footer-grid">
+        <div class="footer-col">
+          <p class="footer-col-label">NAVIGATION</p>
+          <a href="events.html">Events</a>
+          <a href="real-estate.html">Real Estate</a>
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+          <a href="booking.html">Book a Session</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-col-label">SERVICES</p>
+          <p>Event Photography</p>
+          <p>Real Estate Photography</p>
+          <p>Architectural Photography</p>
+          <p>Corporate Events</p>
+        </div>
+        <div class="footer-col">
+          <p class="footer-col-label">CONTACT</p>
+          <a href="mailto:noirandivoryimaging@outlook.com">noirandivoryimaging@outlook.com</a>
+          <a href="https://instagram.com/noirandivoryimaging" target="_blank">instagram.com/noirandivoryimaging</a>
+          <p>Los Angeles, CA</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">© 2026 NOIR &amp; IVORY IMAGING. ALL RIGHTS RESERVED.</p>
+        <p class="footer-copy">CAPTURED AND CRAFTED IN LOS ANGELES</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Intersection observer for fade-in animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
