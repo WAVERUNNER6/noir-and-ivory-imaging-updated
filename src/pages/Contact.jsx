@@ -14,7 +14,7 @@ export default function Contact() {
     await base44.integrations.Core.SendEmail({
       to: 'hello@noirandivory.com',
       subject: `Contact Form: ${form.name}`,
-      body: `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`,
+      body: `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
     });
     toast.success('Message sent successfully');
     setForm({ name: '', email: '', message: '' });
@@ -29,16 +29,16 @@ export default function Contact() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="font-mono text-[11px] text-halide tracking-[0.3em] mb-4"
-          >
+            className="font-mono text-[11px] text-halide tracking-[0.3em] mb-4">
+            
             GET IN TOUCH
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="font-display text-ivory text-5xl md:text-7xl lg:text-8xl leading-[0.9]"
-          >
+            className="font-display text-ivory text-5xl md:text-7xl lg:text-8xl leading-[0.9]">
+            
             Contact
           </motion.h1>
         </div>
@@ -74,8 +74,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-mono text-[11px] text-halide tracking-widest mb-1">EMAIL</p>
-                    <a href="mailto:hello@noirandivory.com" className="font-body text-noir hover:text-halide transition-colors">
-                      hello@noirandivory.com
+                    <a href="mailto:hello@noirandivory.com" className="font-body text-noir hover:text-halide transition-colors">noirandivoryimaging
+
                     </a>
                   </div>
                 </div>
@@ -97,8 +97,8 @@ export default function Contact() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="space-y-8"
-            >
+              className="space-y-8">
+              
               <div>
                 <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">YOUR NAME</label>
                 <input
@@ -107,8 +107,8 @@ export default function Contact() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full bg-transparent border-b border-noir/20 pb-3 font-body text-noir text-lg focus:outline-none focus:border-noir transition-colors"
-                  placeholder="John Doe"
-                />
+                  placeholder="John Doe" />
+                
               </div>
               <div>
                 <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">YOUR EMAIL</label>
@@ -118,8 +118,8 @@ export default function Contact() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="w-full bg-transparent border-b border-noir/20 pb-3 font-body text-noir text-lg focus:outline-none focus:border-noir transition-colors"
-                  placeholder="john@example.com"
-                />
+                  placeholder="john@example.com" />
+                
               </div>
               <div>
                 <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">MESSAGE</label>
@@ -129,14 +129,14 @@ export default function Contact() {
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
                   className="w-full bg-transparent border-b border-noir/20 pb-3 font-body text-noir text-lg focus:outline-none focus:border-noir transition-colors resize-none"
-                  placeholder="Tell us about your project..."
-                />
+                  placeholder="Tell us about your project..." />
+                
               </div>
               <button
                 type="submit"
                 disabled={sending}
-                className="flex items-center gap-3 bg-noir text-ivory px-10 py-4 font-mono text-xs tracking-[0.2em] hover:bg-halide transition-colors disabled:opacity-50"
-              >
+                className="flex items-center gap-3 bg-noir text-ivory px-10 py-4 font-mono text-xs tracking-[0.2em] hover:bg-halide transition-colors disabled:opacity-50">
+                
                 {sending ? 'SENDING...' : 'SEND MESSAGE'}
                 <Send size={14} />
               </button>
@@ -144,6 +144,6 @@ export default function Contact() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
