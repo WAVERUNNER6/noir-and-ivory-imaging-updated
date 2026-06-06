@@ -58,7 +58,7 @@ const realEstatePackages = [
   {
     name: 'Limited Offer',
     eyebrow: 'REAL ESTATE',
-    price: '$575',
+    price: '$350',
     duration: 'Special Introductory Package',
     description: 'A limited-time offer delivering premium property coverage at an exceptional value. Available through October 1, 2026 only.',
     features: [
