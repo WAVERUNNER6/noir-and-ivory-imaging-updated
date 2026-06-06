@@ -85,7 +85,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-mono text-[11px] text-halide tracking-widest mb-1">PHONE</p>
-                    <p className="font-body text-noir">(310) 924</p>
+                    <p className="font-body text-noir">(310) 924-5256</p>
                   </div>
                 </div>
               </div>
