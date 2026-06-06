@@ -74,7 +74,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-mono text-[11px] text-halide tracking-widest mb-1">EMAIL</p>
-                    <a href="mailto:hello@noirandivory.com" className="font-body text-noir hover:text-halide transition-colors">noirandivoryimaging
+                    <a href="mailto:hello@noirandivory.com" className="font-body text-noir hover:text-halide transition-colors">noirandivoryimaging@outlook.com
 
                     </a>
                   </div>
