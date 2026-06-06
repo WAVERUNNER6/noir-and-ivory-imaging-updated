@@ -74,14 +74,7 @@ const realEstatePackages = [
   },
 ];
 
-const addOns = [
-  { label: 'Aerial / Drone Photography', price: '$150' },
-  { label: 'Twilight / Dusk Shoot', price: '$200' },
-  { label: 'Rush Delivery (24 hrs)', price: '$150' },
-  { label: 'Printed Gallery Book', price: '$250' },
-  { label: 'Extra Hour of Coverage', price: '$175/hr' },
-  { label: 'Virtual Tour Assets', price: '$300' },
-];
+
 
 function PackageCard({ pkg, index }) {
   return (
@@ -185,38 +178,6 @@ export default function Pricing() {
           {(activeTab === 'event' ? eventPackages : realEstatePackages).map((pkg, i) => (
             <PackageCard key={pkg.name} pkg={pkg} index={i} />
           ))}
-        </div>
-      </div>
-
-      {/* Add-Ons */}
-      <div className="border-t border-halide/10 py-24">
-        <div className="max-w-[1600px] mx-auto px-6 md:px-12">
-          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="font-mono text-[11px] text-halide tracking-[0.3em] mb-4">
-            ENHANCEMENTS
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="font-display text-ivory text-4xl md:text-5xl mb-16"
-          >
-            Add-On Services
-          </motion.h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-halide/10">
-            {addOns.map((addon, i) => (
-              <motion.div
-                key={addon.label}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="bg-noir flex items-center justify-between px-8 py-6"
-              >
-                <span className="font-body text-halide/80">{addon.label}</span>
-                <span className="font-mono text-ivory text-sm tracking-wider">{addon.price}</span>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </div>
 
