@@ -13,6 +13,7 @@ import RealEstate from './pages/RealEstate';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Booking from './pages/Booking';
+import Pricing from './pages/Pricing';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking" element={<Booking />} />
+        <Route path="/pricing" element={<Pricing />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

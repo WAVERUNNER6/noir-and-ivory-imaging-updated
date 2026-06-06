@@ -6,6 +6,7 @@ import { Menu, X } from 'lucide-react';
 const navLinks = [
   { label: 'EVENTS', path: '/events' },
   { label: 'REAL ESTATE', path: '/real-estate' },
+  { label: 'PRICING', path: '/pricing' },
   { label: 'ABOUT', path: '/about' },
   { label: 'CONTACT', path: '/contact' },
   { label: 'BOOK NOW', path: '/booking' },

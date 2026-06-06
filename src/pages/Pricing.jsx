@@ -1,0 +1,275 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Check, ArrowRight } from 'lucide-react';
+
+const eventPackages = [
+  {
+    name: 'Silver',
+    eyebrow: '01',
+    price: '$850',
+    duration: 'Up to 3 hours',
+    description: 'Perfect for intimate gatherings and smaller corporate events.',
+    features: [
+      '3 hours of coverage',
+      '150+ edited digital images',
+      'Online gallery delivery',
+      '2-week turnaround',
+      'Commercial usage license',
+    ],
+  },
+  {
+    name: 'Gold',
+    eyebrow: '02',
+    price: '$1,450',
+    duration: 'Up to 6 hours',
+    description: 'Our most popular package for weddings, galas, and full-day events.',
+    features: [
+      '6 hours of coverage',
+      '350+ edited digital images',
+      'Online gallery delivery',
+      '1-week turnaround',
+      'Commercial usage license',
+      'Highlight reel (30 images)',
+      'Print-ready files included',
+    ],
+    featured: true,
+  },
+  {
+    name: 'Platinum',
+    eyebrow: '03',
+    price: '$2,200',
+    duration: 'Full day',
+    description: 'Comprehensive coverage for multi-venue or full-day productions.',
+    features: [
+      '10 hours of coverage',
+      '600+ edited digital images',
+      'Online gallery delivery',
+      '5-day rush turnaround',
+      'Commercial usage license',
+      'Highlight reel (60 images)',
+      'Print-ready files included',
+      'Same-day preview (10 images)',
+      'Second photographer available',
+    ],
+  },
+];
+
+const realEstatePackages = [
+  {
+    name: 'Standard',
+    eyebrow: '01',
+    price: '$350',
+    duration: 'Up to 2,500 sq ft',
+    description: 'Ideal for condos, apartments, and smaller residential listings.',
+    features: [
+      'Up to 25 edited images',
+      'Interior & exterior shots',
+      'Online delivery in 48 hours',
+      'MLS-ready files',
+      'Commercial usage license',
+    ],
+  },
+  {
+    name: 'Premium',
+    eyebrow: '02',
+    price: '$575',
+    duration: 'Up to 5,000 sq ft',
+    description: 'Our go-to package for mid-range to luxury residential properties.',
+    features: [
+      'Up to 40 edited images',
+      'Interior, exterior & detail shots',
+      'Online delivery in 24 hours',
+      'MLS-ready files',
+      'Commercial usage license',
+      'Twilight/dusk exterior (3 images)',
+      'Aerial drone shots (3 images)',
+    ],
+    featured: true,
+  },
+  {
+    name: 'Estate',
+    eyebrow: '03',
+    price: '$950',
+    duration: 'Unlimited sq ft',
+    description: 'Full-scale coverage for luxury estates, commercial properties, and developments.',
+    features: [
+      'Unlimited edited images',
+      'Full property documentation',
+      'Same-day delivery available',
+      'MLS-ready & print-ready files',
+      'Commercial usage license',
+      'Twilight/dusk exterior (6 images)',
+      'Aerial drone coverage',
+      'Floor plan photography',
+      'Virtual tour assets',
+    ],
+  },
+];
+
+const addOns = [
+  { label: 'Aerial / Drone Photography', price: '$150' },
+  { label: 'Twilight / Dusk Shoot', price: '$200' },
+  { label: 'Rush Delivery (24 hrs)', price: '$150' },
+  { label: 'Printed Gallery Book', price: '$250' },
+  { label: 'Extra Hour of Coverage', price: '$175/hr' },
+  { label: 'Virtual Tour Assets', price: '$300' },
+];
+
+function PackageCard({ pkg, index }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.12, duration: 0.7 }}
+      className={`relative flex flex-col border p-8 transition-all duration-300
+        ${pkg.featured
+          ? 'border-ivory bg-ivory/5'
+          : 'border-halide/20 hover:border-halide/40'}`}
+    >
+      {pkg.featured && (
+        <div className="absolute -top-px left-8 right-8 h-px bg-ivory" />
+      )}
+      {pkg.featured && (
+        <p className="font-mono text-[10px] tracking-[0.25em] text-ivory bg-ivory/10 border border-ivory/30 px-3 py-1 self-start mb-6">MOST POPULAR</p>
+      )}
+      <p className="font-mono text-[11px] text-halide tracking-[0.3em] mb-3">{pkg.eyebrow}</p>
+      <h3 className="font-display text-ivory text-4xl mb-1">{pkg.name}</h3>
+      <p className="font-mono text-[11px] text-halide tracking-wider mb-6">{pkg.duration}</p>
+      <div className="mb-6 pb-6 border-b border-halide/15">
+        <span className="font-display text-ivory text-5xl">{pkg.price}</span>
+        <span className="font-mono text-[11px] text-halide ml-2 tracking-wider">/ SESSION</span>
+      </div>
+      <p className="font-body text-halide/70 text-sm mb-8 leading-relaxed">{pkg.description}</p>
+      <ul className="space-y-3 mb-10 flex-1">
+        {pkg.features.map(f => (
+          <li key={f} className="flex items-start gap-3">
+            <Check size={13} className="text-ivory mt-0.5 shrink-0" />
+            <span className="font-body text-sm text-halide/80">{f}</span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        to="/booking"
+        className={`flex items-center justify-center gap-3 py-3.5 font-mono text-xs tracking-[0.15em] transition-colors group
+          ${pkg.featured
+            ? 'bg-ivory text-noir hover:bg-halide hover:text-ivory'
+            : 'border border-halide/30 text-halide hover:border-ivory hover:text-ivory'}`}
+      >
+        BOOK THIS PACKAGE <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+      </Link>
+    </motion.div>
+  );
+}
+
+export default function Pricing() {
+  const [activeTab, setActiveTab] = useState('event');
+
+  return (
+    <div className="bg-noir min-h-screen">
+      {/* Header */}
+      <div className="pt-32 md:pt-40 pb-16 md:pb-24">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-12">
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-mono text-[11px] text-halide tracking-[0.3em] mb-4">
+            PRICING
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="font-display text-ivory text-5xl md:text-7xl lg:text-8xl leading-[0.9] mb-8"
+          >
+            Investment<br />Guide
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="font-body text-lg text-halide max-w-xl leading-relaxed"
+          >
+            Transparent pricing with no hidden fees. Every package includes fully edited, print-ready images delivered via private online gallery.
+          </motion.p>
+        </div>
+      </div>
+
+      {/* Tab Toggle */}
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 mb-16">
+        <div className="flex gap-0 border border-halide/20 w-fit">
+          {[['event', 'Event Photography'], ['realestate', 'Real Estate Photography']].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`px-8 py-3.5 font-mono text-xs tracking-[0.15em] transition-colors
+                ${activeTab === key ? 'bg-ivory text-noir' : 'text-halide hover:text-ivory'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Packages */}
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {(activeTab === 'event' ? eventPackages : realEstatePackages).map((pkg, i) => (
+            <PackageCard key={pkg.name} pkg={pkg} index={i} />
+          ))}
+        </div>
+      </div>
+
+      {/* Add-Ons */}
+      <div className="border-t border-halide/10 py-24">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-12">
+          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="font-mono text-[11px] text-halide tracking-[0.3em] mb-4">
+            ENHANCEMENTS
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-display text-ivory text-4xl md:text-5xl mb-16"
+          >
+            Add-On Services
+          </motion.h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-halide/10">
+            {addOns.map((addon, i) => (
+              <motion.div
+                key={addon.label}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-noir flex items-center justify-between px-8 py-6"
+              >
+                <span className="font-body text-halide/80">{addon.label}</span>
+                <span className="font-mono text-ivory text-sm tracking-wider">{addon.price}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Custom Quote */}
+      <div className="bg-ivory py-24">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-12 text-center">
+          <p className="font-mono text-[11px] text-halide tracking-[0.3em] mb-8">CUSTOM PROJECTS</p>
+          <h2 className="font-display text-noir text-4xl md:text-6xl mb-6 leading-[0.95]">
+            Need something<br />bespoke?
+          </h2>
+          <p className="font-body text-lg text-noir/50 max-w-lg mx-auto mb-10 leading-relaxed">
+            Multi-day shoots, brand campaigns, and large-scale productions are quoted individually. Let's talk.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/contact" className="inline-flex items-center justify-center gap-3 bg-noir text-ivory px-10 py-4 font-mono text-xs tracking-[0.2em] hover:bg-halide transition-colors group">
+              GET A CUSTOM QUOTE <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link to="/booking" className="inline-flex items-center justify-center gap-3 border border-noir text-noir px-10 py-4 font-mono text-xs tracking-[0.2em] hover:bg-noir hover:text-ivory transition-colors group">
+              BOOK A SESSION <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

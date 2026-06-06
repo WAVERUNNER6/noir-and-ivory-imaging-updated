@@ -90,9 +90,18 @@ function BookingForm({ form, setForm, bookedSlots }) {
             return (
               <button key={time} type="button" onClick={() => !isBooked && setForm({ ...form, shoot_time: time })} disabled={isBooked}
                 className={`py-2.5 font-mono text-[11px] tracking-wider border transition-all relative
-                  ${isBooked ? 'border-halide/10 text-halide/20 cursor-not-allowed line-through' : form.shoot_time === time ? 'border-ivory bg-ivory/10 text-ivory' : 'border-halide/20 text-halide hover:border-halide/50'}`}>
-                {time}
-                {isBooked && <span className="block text-[9px] tracking-wider mt-0.5 no-underline" style={{ textDecoration: 'none' }}>BOOKED</span>}
+                  ${isBooked
+                    ? 'border-halide/10 text-halide/30 cursor-not-allowed'
+                    : form.shoot_time === time
+                      ? 'border-ivory bg-ivory/10 text-ivory'
+                      : 'border-halide/20 text-halide hover:border-halide/50'}`}>
+                {isBooked ? (
+                  <span className="relative inline-block">
+                    <span className="absolute inset-x-0 top-1/2 h-[1px] bg-halide/40 -translate-y-1/2" />
+                    {time}
+                  </span>
+                ) : time}
+                {isBooked && <span className="block text-[9px] tracking-wider mt-0.5 text-halide/30">RESERVED</span>}
               </button>
             );
           })}
