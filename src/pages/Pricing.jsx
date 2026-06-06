@@ -50,32 +50,17 @@ const eventPackages = [
       'Highlight reel (60 images)',
       'Print-ready files included',
       'Same-day preview (10 images)',
-      'Second photographer available',
     ],
   },
 ];
 
 const realEstatePackages = [
   {
-    name: 'Standard',
-    eyebrow: '01',
-    price: '$350',
-    duration: 'Up to 2,500 sq ft',
-    description: 'Ideal for condos, apartments, and smaller residential listings.',
-    features: [
-      'Up to 25 edited images',
-      'Interior & exterior shots',
-      'Online delivery in 48 hours',
-      'MLS-ready files',
-      'Commercial usage license',
-    ],
-  },
-  {
-    name: 'Premium',
-    eyebrow: '02',
+    name: 'Limited Offer',
+    eyebrow: 'REAL ESTATE',
     price: '$575',
-    duration: 'Up to 5,000 sq ft',
-    description: 'Our go-to package for mid-range to luxury residential properties.',
+    duration: 'Special Introductory Package',
+    description: 'A limited-time offer delivering premium property coverage at an exceptional value. Available through October 1, 2026 only.',
     features: [
       'Up to 40 edited images',
       'Interior, exterior & detail shots',
@@ -83,27 +68,9 @@ const realEstatePackages = [
       'MLS-ready files',
       'Commercial usage license',
       'Twilight/dusk exterior (3 images)',
-      'Aerial drone shots (3 images)',
     ],
     featured: true,
-  },
-  {
-    name: 'Estate',
-    eyebrow: '03',
-    price: '$950',
-    duration: 'Unlimited sq ft',
-    description: 'Full-scale coverage for luxury estates, commercial properties, and developments.',
-    features: [
-      'Unlimited edited images',
-      'Full property documentation',
-      'Same-day delivery available',
-      'MLS-ready & print-ready files',
-      'Commercial usage license',
-      'Twilight/dusk exterior (6 images)',
-      'Aerial drone coverage',
-      'Floor plan photography',
-      'Virtual tour assets',
-    ],
+    limitedTime: true,
   },
 ];
 
@@ -131,8 +98,11 @@ function PackageCard({ pkg, index }) {
       {pkg.featured && (
         <div className="absolute -top-px left-8 right-8 h-px bg-ivory" />
       )}
-      {pkg.featured && (
+      {pkg.featured && !pkg.limitedTime && (
         <p className="font-mono text-[10px] tracking-[0.25em] text-ivory bg-ivory/10 border border-ivory/30 px-3 py-1 self-start mb-6">MOST POPULAR</p>
+      )}
+      {pkg.limitedTime && (
+        <p className="font-mono text-[10px] tracking-[0.25em] text-noir bg-ivory px-3 py-1 self-start mb-6">LIMITED TIME OFFER — EXPIRES OCT 1, 2026</p>
       )}
       <p className="font-mono text-[11px] text-halide tracking-[0.3em] mb-3">{pkg.eyebrow}</p>
       <h3 className="font-display text-ivory text-4xl mb-1">{pkg.name}</h3>
@@ -211,7 +181,7 @@ export default function Pricing() {
 
       {/* Packages */}
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`grid gap-6 ${activeTab === 'realestate' ? 'grid-cols-1 max-w-xl' : 'grid-cols-1 md:grid-cols-3'}`}>
           {(activeTab === 'event' ? eventPackages : realEstatePackages).map((pkg, i) => (
             <PackageCard key={pkg.name} pkg={pkg} index={i} />
           ))}
