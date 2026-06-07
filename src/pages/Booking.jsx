@@ -205,7 +205,10 @@ export default function Booking() {
     if (!selectedDate) return;
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     base44.entities.Booking.filter({ shoot_date: dateStr }).then(bookings => {
-      setBookedSlots(bookings.map(b => b.shoot_time).filter(Boolean));
+      const reserved = bookings
+        .filter(b => b.status !== 'cancelled' && b.shoot_time)
+        .map(b => b.shoot_time);
+      setBookedSlots(reserved);
     });
   }, [selectedDate]);
 
