@@ -31,11 +31,6 @@ function parseDateTime(dateStr, timeStr) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { booking } = await req.json();
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
