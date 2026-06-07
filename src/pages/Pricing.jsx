@@ -161,7 +161,7 @@ function PackageCard({ pkg, index, activeTab }) {
 }
 
 export default function Pricing() {
-  const [activeTab, setActiveTab] = useState('business');
+  const [activeTab, setActiveTab] = useState('personal');
 
   return (
     <div className="bg-noir min-h-screen">
@@ -193,7 +193,7 @@ export default function Pricing() {
       {/* Tab Toggle */}
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 mb-16">
         <div className="flex gap-0 border border-halide/20 w-fit">
-          {[['business', 'Business Events'], ['personal', 'Personal Events'], ['realestate', 'Real Estate Photography']].map(([key, label]) => (
+          {[['personal', 'Personal Events'], ['business', 'Business Events'], ['realestate', 'Real Estate Photography']].map(([key, label]) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
