@@ -29,9 +29,30 @@ function ShootTypeSelector({ selected, onSelect }) {
 
 function BookingCalendar({ selectedDate, onSelectDate }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [fullyBookedDates, setFullyBookedDates] = useState(new Set());
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const days = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) });
   const startDay = getDay(startOfMonth(currentMonth));
+
+  useEffect(() => {
+    const start = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
+    const end = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
+    base44.entities.Booking.filter({ shoot_date: { $gte: start, $lte: end } }).then(bookings => {
+      const slotsByDate = {};
+      bookings.forEach(b => {
+        if (b.shoot_time && b.status !== 'cancelled') {
+          if (!slotsByDate[b.shoot_date]) slotsByDate[b.shoot_date] = new Set();
+          slotsByDate[b.shoot_date].add(b.shoot_time);
+        }
+      });
+      const fullyBooked = new Set(
+        Object.entries(slotsByDate)
+          .filter(([, slots]) => slots.size >= TIME_SLOTS.length)
+          .map(([date]) => date)
+      );
+      setFullyBookedDates(fullyBooked);
+    });
+  }, [currentMonth]);
 
   return (
     <div>
@@ -51,17 +72,29 @@ function BookingCalendar({ selectedDate, onSelectDate }) {
         {Array.from({ length: startDay }).map((_, i) => <div key={`e${i}`} />)}
         {days.map((day) => {
           const isPast = isBefore(day, today);
+          const dateStr = format(day, 'yyyy-MM-dd');
+          const isFullyBooked = fullyBookedDates.has(dateStr);
           const isSelected = selectedDate && isSameDay(day, selectedDate);
+          const isDisabled = isPast || isFullyBooked;
           return (
-            <button key={day.toISOString()} onClick={() => !isPast && onSelectDate(day)} disabled={isPast}
-              className={`aspect-square flex items-center justify-center font-mono text-xs transition-all duration-200
-                ${isPast ? 'text-halide/20 cursor-not-allowed' : 'text-halide hover:text-ivory hover:bg-ivory/10 cursor-pointer'}
+            <button key={day.toISOString()} onClick={() => !isDisabled && onSelectDate(day)} disabled={isDisabled}
+              title={isFullyBooked ? 'Fully booked' : undefined}
+              className={`aspect-square flex flex-col items-center justify-center font-mono text-xs transition-all duration-200 relative
+                ${isDisabled ? 'cursor-not-allowed' : 'hover:text-ivory hover:bg-ivory/10 cursor-pointer'}
+                ${isPast ? 'text-halide/20' : isFullyBooked ? 'text-halide/30' : 'text-halide'}
                 ${isSelected ? 'bg-ivory !text-noir' : ''}
                 ${isToday(day) && !isSelected ? 'border border-halide/40' : ''}`}>
               {format(day, 'd')}
+              {isFullyBooked && !isPast && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-red-500/60" />
+              )}
             </button>
           );
         })}
+      </div>
+      <div className="flex items-center gap-4 mt-6 font-mono text-[10px] text-halide/50 tracking-wider">
+        <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500/60 inline-block" /> FULLY BOOKED</span>
+        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-ivory inline-block" /> SELECTED</span>
       </div>
     </div>
   );
