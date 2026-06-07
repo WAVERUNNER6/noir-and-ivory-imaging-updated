@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const base44 = createClientFromRequest(req);
+    const base44 = createClientFromRequest(req, { appId: Deno.env.get('BASE44_APP_ID') });
     const booking = await base44.asServiceRole.entities.Booking.get(booking_id);
 
     if (!booking) {
