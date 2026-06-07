@@ -28,15 +28,6 @@ function parseDateTime(dateStr, timeStr) {
   return new Date(year, month - 1, day, hours, minutes).toISOString().slice(0, 19);
 }
 
-async function generateToken(bookingId, action, appId) {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(appId || 'noir-ivory-secret');
-  const msgData = encoder.encode(`${bookingId}:${action}`);
-  const key = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const sig = await crypto.subtle.sign('HMAC', key, msgData);
-  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -45,23 +36,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { booking, booking_id } = await req.json();
-    const appId = Deno.env.get('BASE44_APP_ID') || 'noir-ivory-secret';
+    const { booking } = await req.json();
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
 
     const shootDate = booking.shoot_date;
     const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate Photography' : 'Event Photography';
-
-    // Generate one-click action tokens
-    const confirmToken = await generateToken(booking_id, 'confirm', appId);
-    const declineToken = await generateToken(booking_id, 'decline', appId);
-
-    // Build action URLs using the same origin as this function (deno.dev host)
-    const reqUrl = new URL(req.url);
-    const baseUrl = `${reqUrl.origin}/functions/bookingAction`;
-    const confirmUrl = `${baseUrl}?booking_id=${booking_id}&action=confirm&token=${confirmToken}`;
-    const declineUrl = `${baseUrl}?booking_id=${booking_id}&action=decline&token=${declineToken}`;
 
     // 1. Create calendar event (pending)
     const startDT = parseDateTime(shootDate, booking.shoot_time || '09:00 AM');
@@ -91,7 +71,7 @@ Deno.serve(async (req) => {
       }),
     });
 
-    // 2. Send studio notification email WITH confirm/decline buttons
+    // 2. Send studio notification email (info only — manage bookings via the admin dashboard)
     await graphRequest(accessToken, '/me/sendMail', {
       method: 'POST',
       body: JSON.stringify({
@@ -117,25 +97,8 @@ Deno.serve(async (req) => {
                     ${booking.client_phone ? `<tr><td style="padding: 7px 0; color: #888;">Phone</td><td style="color: #1a1a1a;">${booking.client_phone}</td></tr>` : ''}
                     ${booking.details ? `<tr><td style="padding: 7px 0; color: #888; vertical-align: top;">Details</td><td style="color: #1a1a1a;">${booking.details}</td></tr>` : ''}
                   </table>
-
-                  <!-- Action Buttons -->
-                  <div style="background: #f8f7f5; padding: 24px; text-align: center;">
-                    <p style="font-family: monospace; font-size: 10px; letter-spacing: 3px; color: #8E8E8E; margin: 0 0 20px; text-transform: uppercase;">Respond to this request</p>
-                    <table style="margin: 0 auto;" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding-right: 12px;">
-                          <a href="${confirmUrl}" style="display: inline-block; background: #0A0A0A; color: #F9F7F5; text-decoration: none; padding: 14px 32px; font-family: monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">
-                            ✓ Confirm Session
-                          </a>
-                        </td>
-                        <td>
-                          <a href="${declineUrl}" style="display: inline-block; background: #fff; color: #C62828; text-decoration: none; padding: 14px 32px; font-family: monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; border: 1px solid #C62828;">
-                            ✗ Decline
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                    <p style="font-size: 12px; color: #aaa; margin: 16px 0 0;">Clicking either button will automatically notify the client.</p>
+                  <div style="background: #f8f7f5; padding: 20px 24px; text-align: center;">
+                    <p style="font-family: monospace; font-size: 11px; letter-spacing: 2px; color: #8E8E8E; margin: 0; text-transform: uppercase;">Manage this booking from your Admin Dashboard</p>
                   </div>
                 </div>
                 <div style="padding: 16px 36px; background: #f8f7f5;">
@@ -150,7 +113,7 @@ Deno.serve(async (req) => {
       }),
     });
 
-    return Response.json({ success: true, message: 'Studio notified with confirm/decline buttons.' });
+    return Response.json({ success: true, message: 'Studio notified.' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

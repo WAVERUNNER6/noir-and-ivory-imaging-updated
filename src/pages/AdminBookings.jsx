@@ -179,7 +179,7 @@ export default function AdminBookings() {
               </div>
             )}
           </div>
-          <p className="font-body text-halide/60 mt-6 text-sm">Confirming a booking automatically emails the client and updates your Outlook calendar.</p>
+          <p className="font-body text-halide/60 mt-6 text-sm">Confirm or decline bookings below — clients are automatically notified and your Outlook calendar is updated.</p>
         </div>
       </div>
 
