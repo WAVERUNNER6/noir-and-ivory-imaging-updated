@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest, createClient } from 'npm:@base44/sdk@0.8.31';
 
 // Called via GET link from the studio email — no auth required, token-validated.
 Deno.serve(async (req) => {
@@ -29,7 +29,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const base44 = createClientFromRequest(req, { appId: Deno.env.get('BASE44_APP_ID') });
+    // Direct browser GET has no auth headers — use createClient with appId directly
+    const base44 = createClient({ appId: Deno.env.get('BASE44_APP_ID') });
     const booking = await base44.asServiceRole.entities.Booking.get(booking_id);
 
     if (!booking) {
@@ -48,6 +49,7 @@ Deno.serve(async (req) => {
 
     const newStatus = action === 'confirm' ? 'confirmed' : 'cancelled';
     await base44.asServiceRole.entities.Booking.update(booking_id, { status: newStatus });
+    
 
     const color = newStatus === 'confirmed' ? '#2E7D32' : '#C62828';
     const title = newStatus === 'confirmed' ? '✅ Session Confirmed!' : '❌ Booking Declined';

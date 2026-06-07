@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     const confirmToken = await generateToken(booking_id, 'confirm', appId);
     const declineToken = await generateToken(booking_id, 'decline', appId);
 
-    // Build action URLs — derive the base from the incoming request's host
+    // Build action URLs using the same origin as this function (deno.dev host)
     const reqUrl = new URL(req.url);
     const baseUrl = `${reqUrl.origin}/functions/bookingAction`;
     const confirmUrl = `${baseUrl}?booking_id=${booking_id}&action=confirm&token=${confirmToken}`;
