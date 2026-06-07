@@ -83,6 +83,28 @@ function BookingForm({ form, setForm, bookedSlots }) {
         </div>
       ))}
       <div>
+        <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">PACKAGE REQUEST</label>
+        <select
+          value={form.package_request || ''}
+          onChange={e => setForm({ ...form, package_request: e.target.value })}
+          className="w-full bg-noir border-b border-halide/30 pb-3 font-body text-ivory text-lg focus:outline-none focus:border-ivory transition-colors appearance-none cursor-pointer"
+        >
+          <option value="" disabled className="bg-noir text-halide">Select a package...</option>
+          <optgroup label="Business Events" className="bg-noir text-halide font-mono text-xs">
+            <option value="Business Events — Silver" className="bg-noir text-ivory">Silver — $850 (Up to 3 hours)</option>
+            <option value="Business Events — Gold" className="bg-noir text-ivory">Gold — $1,450 (Up to 6 hours)</option>
+            <option value="Business Events — Platinum" className="bg-noir text-ivory">Platinum — $2,200 (Full day)</option>
+          </optgroup>
+          <optgroup label="Personal Events" className="bg-noir text-halide font-mono text-xs">
+            <option value="Personal Events — Celebrations" className="bg-noir text-ivory">Celebrations — Starting at $175</option>
+            <option value="Personal Events — Wedding" className="bg-noir text-ivory">Wedding — Starting at $1,200</option>
+          </optgroup>
+          <optgroup label="Real Estate" className="bg-noir text-halide font-mono text-xs">
+            <option value="Real Estate — Limited Time Special" className="bg-noir text-ivory">Limited Time Special — $350</option>
+          </optgroup>
+        </select>
+      </div>
+      <div>
         <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">PREFERRED TIME</label>
         <div className="grid grid-cols-3 gap-2">
           {TIME_SLOTS.map(time => {
@@ -122,7 +144,7 @@ export default function Booking() {
   const [submitted, setSubmitted] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [bookedSlots, setBookedSlots] = useState([]);
-  const [form, setForm] = useState({ client_name: '', client_email: '', client_phone: '', shoot_type: '', shoot_time: '', location: '', details: '' });
+  const [form, setForm] = useState({ client_name: '', client_email: '', client_phone: '', shoot_type: '', shoot_time: '', location: '', package_request: '', details: '' });
 
   // Load booked time slots whenever selected date changes
   useEffect(() => {
@@ -234,6 +256,7 @@ export default function Booking() {
                       ['DATE', selectedDate && format(selectedDate, 'MMMM d, yyyy')],
                       ['TIME', form.shoot_time || 'Flexible'],
                       ['LOCATION', form.location || 'TBD'],
+                      ['PACKAGE', form.package_request || 'Not specified'],
                       ['NAME', form.client_name],
                       ['EMAIL', form.client_email],
                     ].map(([label, val]) => (
