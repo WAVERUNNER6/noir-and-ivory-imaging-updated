@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check, ArrowRight } from 'lucide-react';
 
-const eventPackages = [
+const businessEventPackages = [
   {
     name: 'Silver',
     eyebrow: '01',
@@ -23,7 +23,7 @@ const eventPackages = [
     eyebrow: '02',
     price: '$1,450',
     duration: 'Up to 6 hours',
-    description: 'Our most popular package for weddings, galas, and full-day events.',
+    description: 'Our most popular package for galas, conferences, and full-day events.',
     features: [
       '6 hours of coverage',
       '350+ edited digital images',
@@ -54,6 +54,53 @@ const eventPackages = [
   },
 ];
 
+const personalEventPackages = [
+  {
+    name: 'Graduation',
+    eyebrow: '01',
+    price: 'Starting at $150',
+    duration: 'Ceremony & Celebration',
+    description: 'Capture the milestone moments of your graduation day with beautifully edited images.',
+    features: [
+      'Ceremony & portrait coverage',
+      'Edited digital images',
+      'Online gallery delivery',
+      'Print-ready files',
+      'Personal usage license',
+    ],
+  },
+  {
+    name: 'Birthday',
+    eyebrow: '02',
+    price: 'Starting at $100',
+    duration: 'Party Coverage',
+    description: 'Relive every laugh, candle, and candid moment from your birthday celebration.',
+    features: [
+      'Party & portrait coverage',
+      'Edited digital images',
+      'Online gallery delivery',
+      'Print-ready files',
+      'Personal usage license',
+    ],
+    featured: true,
+  },
+  {
+    name: 'Wedding',
+    eyebrow: '03',
+    price: 'Starting at $600',
+    duration: 'Full Ceremony Coverage',
+    description: 'Timeless, elegant coverage of your most important day from start to finish.',
+    features: [
+      'Ceremony & reception coverage',
+      'Edited digital images',
+      'Online gallery delivery',
+      'Print-ready files',
+      'Personal usage license',
+      'Highlight reel included',
+    ],
+  },
+];
+
 const realEstatePackages = [
   {
     name: 'Limited Offer',
@@ -68,6 +115,7 @@ const realEstatePackages = [
       'MLS-ready files',
       'Commercial usage license',
       'Twilight/dusk exterior (3 images)',
+      '1–2 minute property video',
     ],
     featured: true,
     limitedTime: true,
@@ -127,7 +175,7 @@ function PackageCard({ pkg, index }) {
 }
 
 export default function Pricing() {
-  const [activeTab, setActiveTab] = useState('event');
+  const [activeTab, setActiveTab] = useState('business');
 
   return (
     <div className="bg-noir min-h-screen">
@@ -159,7 +207,7 @@ export default function Pricing() {
       {/* Tab Toggle */}
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 mb-16">
         <div className="flex gap-0 border border-halide/20 w-fit">
-          {[['event', 'Event Photography'], ['realestate', 'Real Estate Photography']].map(([key, label]) => (
+          {[['business', 'Business Events'], ['personal', 'Personal Events'], ['realestate', 'Real Estate Photography']].map(([key, label]) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -175,7 +223,7 @@ export default function Pricing() {
       {/* Packages */}
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 pb-24">
         <div className={`grid gap-6 ${activeTab === 'realestate' ? 'grid-cols-1 max-w-xl' : 'grid-cols-1 md:grid-cols-3'}`}>
-          {(activeTab === 'event' ? eventPackages : realEstatePackages).map((pkg, i) => (
+          {(activeTab === 'business' ? businessEventPackages : activeTab === 'personal' ? personalEventPackages : realEstatePackages).map((pkg, i) => (
             <PackageCard key={pkg.name} pkg={pkg} index={i} />
           ))}
         </div>
