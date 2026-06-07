@@ -188,11 +188,9 @@ export default function Booking() {
     const shootDate = format(selectedDate, 'yyyy-MM-dd');
     await base44.entities.Booking.create({ ...form, shoot_date: shootDate, status: 'pending' });
 
-    // Notify studio via email
-    await base44.integrations.Core.SendEmail({
-      to: 'noirandivoryimaging@outlook.com',
-      subject: `New Booking: ${form.shoot_type?.replace('_', ' ')} — ${format(selectedDate, 'MMMM d, yyyy')}`,
-      body: `New booking request received:\n\nSHOOT TYPE: ${form.shoot_type?.replace('_', ' ').toUpperCase()}\nDATE: ${format(selectedDate, 'MMMM d, yyyy')}\nTIME: ${form.shoot_time || 'Flexible'}\nLOCATION: ${form.location || 'TBD'}\nPACKAGE: ${form.package_request || 'Not specified'}\nNAME: ${form.client_name}\nEMAIL: ${form.client_email}${form.client_phone ? `\nPHONE: ${form.client_phone}` : ''}${form.details ? `\n\nDETAILS:\n${form.details}` : ''}\n\nPlease respond within 24 hours to confirm.`,
+    // Send confirmation email + add to Outlook calendar
+    await base44.functions.invoke('outlookBookingConfirmation', {
+      booking: { ...form, shoot_date: shootDate },
     });
 
     toast.success('Booking request submitted!');
