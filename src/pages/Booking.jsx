@@ -101,6 +101,7 @@ function BookingCalendar({ selectedDate, onSelectDate }) {
 }
 
 function BookingForm({ form, setForm, bookedSlots }) {
+  const { pending = [], confirmed = [] } = bookedSlots;
   return (
     <div className="space-y-6">
       {[
@@ -141,22 +142,23 @@ function BookingForm({ form, setForm, bookedSlots }) {
         <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">PREFERRED TIME</label>
         <div className="grid grid-cols-3 gap-2">
           {TIME_SLOTS.map(time => {
-            const isBooked = bookedSlots.includes(time);
+            const isConfirmed = confirmed.includes(time);
+            const isPending = pending.includes(time);
+            const isUnavailable = isConfirmed || isPending;
             return (
-              <button key={time} type="button" onClick={() => !isBooked && setForm({ ...form, shoot_time: time })} disabled={isBooked}
+              <button key={time} type="button" onClick={() => !isUnavailable && setForm({ ...form, shoot_time: time })} disabled={isUnavailable}
                 className={`py-2.5 font-mono text-[11px] tracking-wider border transition-all relative
-                  ${isBooked
+                  ${isUnavailable
                     ? 'border-halide/10 text-halide/30 cursor-not-allowed'
                     : form.shoot_time === time
                       ? 'border-ivory bg-ivory/10 text-ivory'
                       : 'border-halide/20 text-halide hover:border-halide/50'}`}>
-                {isBooked ? (
-                  <span className="relative inline-block">
-                    <span className="absolute inset-x-0 top-1/2 h-[1px] bg-halide/40 -translate-y-1/2" />
-                    {time}
-                  </span>
-                ) : time}
-                {isBooked && <span className="block text-[9px] tracking-wider mt-0.5 text-halide/30">RESERVED</span>}
+                <span className={`relative inline-block ${isUnavailable ? 'opacity-40' : ''}`}>
+                  {isUnavailable && <span className="absolute inset-x-0 top-1/2 h-[1px] bg-halide/40 -translate-y-1/2" />}
+                  {time}
+                </span>
+                {isPending && <span className="block text-[9px] tracking-wider mt-0.5 text-yellow-500/60">REQUESTED</span>}
+                {isConfirmed && <span className="block text-[9px] tracking-wider mt-0.5 text-halide/30">RESERVED</span>}
               </button>
             );
           })}
@@ -191,7 +193,7 @@ export default function Booking() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [bookedSlots, setBookedSlots] = useState([]);
+  const [bookedSlots, setBookedSlots] = useState({ pending: [], confirmed: [] });
   const [form, setForm] = useState({
     client_name: '', client_email: '', client_phone: '',
     shoot_type: initialShootType,
@@ -205,10 +207,13 @@ export default function Booking() {
     if (!selectedDate) return;
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     base44.entities.Booking.filter({ shoot_date: dateStr }).then(bookings => {
-      const reserved = bookings
-        .filter(b => b.status !== 'cancelled' && b.shoot_time)
+      const pending = bookings
+        .filter(b => b.status === 'pending' && b.shoot_time)
         .map(b => b.shoot_time);
-      setBookedSlots(reserved);
+      const confirmed = bookings
+        .filter(b => ['confirmed', 'completed'].includes(b.status) && b.shoot_time)
+        .map(b => b.shoot_time);
+      setBookedSlots({ pending, confirmed });
     });
   }, [selectedDate]);
 
