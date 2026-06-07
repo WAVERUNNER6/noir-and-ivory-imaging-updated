@@ -56,27 +56,13 @@ const businessEventPackages = [
 
 const personalEventPackages = [
   {
-    name: 'Graduation',
+    name: 'Celebrations',
     eyebrow: '01',
-    price: 'Starting at $150',
-    duration: 'Ceremony & Celebration',
-    description: 'Capture the milestone moments of your graduation day with beautifully edited images.',
+    price: 'Starting at $175',
+    duration: 'Portraits & Life Milestones',
+    description: 'From graduations and birthdays to engagement photos, baby showers, portraits, and everything in between — every milestone deserves to be remembered.',
     features: [
-      'Ceremony & portrait coverage',
-      'Edited digital images',
-      'Online gallery delivery',
-      'Print-ready files',
-      'Personal usage license',
-    ],
-  },
-  {
-    name: 'Birthday',
-    eyebrow: '02',
-    price: 'Starting at $100',
-    duration: 'Party Coverage',
-    description: 'Relive every laugh, candle, and candid moment from your birthday celebration.',
-    features: [
-      'Party & portrait coverage',
+      'Event & portrait coverage',
       'Edited digital images',
       'Online gallery delivery',
       'Print-ready files',
@@ -86,8 +72,8 @@ const personalEventPackages = [
   },
   {
     name: 'Wedding',
-    eyebrow: '03',
-    price: 'Starting at $600',
+    eyebrow: '02',
+    price: 'Starting at $1,200',
     duration: 'Full Ceremony Coverage',
     description: 'Timeless, elegant coverage of your most important day from start to finish.',
     features: [
