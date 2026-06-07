@@ -186,12 +186,12 @@ export default function Booking() {
   const handleSubmit = async () => {
     setSubmitting(true);
     const shootDate = format(selectedDate, 'yyyy-MM-dd');
-    const created = await base44.entities.Booking.create({ ...form, shoot_date: shootDate, status: 'pending' });
+    await base44.entities.Booking.create({ ...form, shoot_date: shootDate, status: 'pending' });
 
-    // Send studio notification email + add to Outlook calendar
-    await base44.functions.invoke('outlookBookingConfirmation', {
+    // Fire outlook notification without blocking the confirmation screen
+    base44.functions.invoke('outlookBookingConfirmation', {
       booking: { ...form, shoot_date: shootDate },
-    });
+    }).catch(() => {}); // non-blocking — don't let this hang the user
 
     toast.success('Booking request submitted!');
     setSubmitted(true);
