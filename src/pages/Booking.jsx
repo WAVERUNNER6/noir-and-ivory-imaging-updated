@@ -192,7 +192,7 @@ export default function Booking() {
     await base44.integrations.Core.SendEmail({
       to: 'noirandivoryimaging@outlook.com',
       subject: `New Booking: ${form.shoot_type?.replace('_', ' ')} — ${format(selectedDate, 'MMMM d, yyyy')}`,
-      body: `New booking request received:\n\nClient: ${form.client_name}\nEmail: ${form.client_email}\nPhone: ${form.client_phone || 'N/A'}\n\nShoot Type: ${form.shoot_type?.replace('_', ' ')}\nDate: ${format(selectedDate, 'EEEE, MMMM d, yyyy')}\nTime: ${form.shoot_time || 'Flexible'}\nLocation: ${form.location || 'TBD'}\n\nAdditional Details:\n${form.details || 'None'}\n\nPlease respond within 24 hours to confirm.`,
+      body: `New booking request received:\n\nSHOOT TYPE: ${form.shoot_type?.replace('_', ' ').toUpperCase()}\nDATE: ${format(selectedDate, 'MMMM d, yyyy')}\nTIME: ${form.shoot_time || 'Flexible'}\nLOCATION: ${form.location || 'TBD'}\nPACKAGE: ${form.package_request || 'Not specified'}\nNAME: ${form.client_name}\nEMAIL: ${form.client_email}${form.client_phone ? `\nPHONE: ${form.client_phone}` : ''}${form.details ? `\n\nDETAILS:\n${form.details}` : ''}\n\nPlease respond within 24 hours to confirm.`,
     });
 
     toast.success('Booking request submitted!');
