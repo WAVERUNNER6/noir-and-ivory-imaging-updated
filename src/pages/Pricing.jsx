@@ -110,7 +110,7 @@ const realEstatePackages = [
 
 
 
-function PackageCard({ pkg, index }) {
+function PackageCard({ pkg, index, activeTab }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -148,7 +148,7 @@ function PackageCard({ pkg, index }) {
         ))}
       </ul>
       <Link
-        to="/booking"
+        to={`/booking?package=${encodeURIComponent(pkg.name)}&tab=${activeTab}`}
         className={`flex items-center justify-center gap-3 py-3.5 font-mono text-xs tracking-[0.15em] transition-colors group
           ${pkg.featured
             ? 'bg-ivory text-noir hover:bg-halide hover:text-ivory'
@@ -210,7 +210,7 @@ export default function Pricing() {
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 pb-24">
         <div className={`grid gap-6 ${activeTab === 'realestate' ? 'grid-cols-1 max-w-xl' : 'grid-cols-1 md:grid-cols-3'}`}>
           {(activeTab === 'business' ? businessEventPackages : activeTab === 'personal' ? personalEventPackages : realEstatePackages).map((pkg, i) => (
-            <PackageCard key={pkg.name} pkg={pkg} index={i} />
+            <PackageCard key={pkg.name} pkg={pkg} index={i} activeTab={activeTab} />
           ))}
         </div>
       </div>

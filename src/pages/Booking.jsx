@@ -138,13 +138,34 @@ function BookingForm({ form, setForm, bookedSlots }) {
   );
 }
 
+const TAB_TO_SHOOT_TYPE = {
+  business: 'event',
+  personal: 'event',
+  realestate: 'real_estate',
+};
+
 export default function Booking() {
-  const [step, setStep] = useState(0);
+  const urlParams = new URLSearchParams(window.location.search);
+  const preselectedPackage = urlParams.get('package');
+  const preselectedTab = urlParams.get('tab');
+
+  const initialShootType = preselectedTab ? (TAB_TO_SHOOT_TYPE[preselectedTab] || '') : '';
+  const initialPackage = preselectedPackage
+    ? `${preselectedTab === 'business' ? 'Business Events' : preselectedTab === 'personal' ? 'Personal Events' : 'Real Estate'} — ${preselectedPackage}`
+    : '';
+
+  const [step, setStep] = useState(preselectedPackage ? 1 : 0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [bookedSlots, setBookedSlots] = useState([]);
-  const [form, setForm] = useState({ client_name: '', client_email: '', client_phone: '', shoot_type: '', shoot_time: '', location: '', package_request: '', details: '' });
+  const [form, setForm] = useState({
+    client_name: '', client_email: '', client_phone: '',
+    shoot_type: initialShootType,
+    shoot_time: '', location: '',
+    package_request: initialPackage,
+    details: ''
+  });
 
   // Load booked time slots whenever selected date changes
   useEffect(() => {
@@ -213,7 +234,7 @@ export default function Booking() {
             <React.Fragment key={s}>
               <div className="flex items-center gap-2">
                 <div className={`w-6 h-6 flex items-center justify-center font-mono text-[10px] transition-colors ${i <= step ? 'bg-ivory text-noir' : 'border border-halide/30 text-halide/30'}`}>
-                  {i < step ? <Check size={12} /> : i + 1}
+                  {i < step || (i === 0 && !!preselectedPackage) ? <Check size={12} /> : i + 1}
                 </div>
                 <span className={`font-mono text-[10px] tracking-widest hidden sm:block ${i <= step ? 'text-ivory' : 'text-halide/30'}`}>{s}</span>
               </div>
@@ -279,7 +300,7 @@ export default function Booking() {
         </AnimatePresence>
 
         <div className="flex justify-between items-center mt-12 pt-8 border-t border-halide/10">
-          <button onClick={() => setStep(step - 1)} className={`flex items-center gap-2 font-mono text-xs tracking-widest text-halide hover:text-ivory transition-colors ${step === 0 ? 'invisible' : ''}`}>
+          <button onClick={() => setStep(step - 1)} className={`flex items-center gap-2 font-mono text-xs tracking-widest text-halide hover:text-ivory transition-colors ${step === 0 || (step === 1 && !!preselectedPackage) ? 'invisible' : ''}`}>
             <ArrowLeft size={14} /> BACK
           </button>
           {step < 3 ? (
