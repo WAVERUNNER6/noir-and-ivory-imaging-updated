@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
-import { Check, X, Camera, Building2, Clock, ChevronDown, Mail } from 'lucide-react';
+import { Check, X, Camera, Building2, Clock, ChevronDown, Paperclip, Send, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import GalleryUploader from '@/components/admin/GalleryUploader';
+import InvoiceGenerator from '@/components/admin/InvoiceGenerator';
 
 const STATUS_CONFIG = {
   pending:   { label: 'PENDING',   bg: 'bg-halide/10',  text: 'text-halide',  border: 'border-halide/30' },
@@ -25,6 +26,9 @@ function StatusBadge({ status }) {
 function BookingRow({ booking, onStatusChange }) {
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [invoiceFile, setInvoiceFile] = useState(null);
+  const [sendingInvoice, setSendingInvoice] = useState(false);
+  const invoiceInputRef = useRef();
 
   const handleAction = async (newStatus) => {
     setLoading(true);
@@ -32,6 +36,16 @@ function BookingRow({ booking, onStatusChange }) {
     toast.success(`Booking ${newStatus}.`);
     onStatusChange(booking.id, newStatus);
     setLoading(false);
+  };
+
+  const handleSendInvoice = async () => {
+    if (!invoiceFile) return;
+    setSendingInvoice(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file: invoiceFile });
+    await base44.functions.invoke('sendInvoiceEmail', { booking, invoice_url: file_url });
+    toast.success(`Invoice sent to ${booking.client_email}`);
+    setInvoiceFile(null);
+    setSendingInvoice(false);
   };
 
   const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate' : 'Event';
@@ -135,14 +149,41 @@ function BookingRow({ booking, onStatusChange }) {
                   </p>
                 )}
               </div>
-            </div>
 
+              {/* Invoice section */}
+              {booking.status !== 'cancelled' && (
+                <div className="border-t border-halide/10 pt-4 mt-2 space-y-3">
+                  <p className="font-mono text-[9px] tracking-widest text-halide/50">INVOICE</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <InvoiceGenerator booking={booking} />
+                    <input ref={invoiceInputRef} type="file" accept="application/pdf" className="hidden"
+                      onChange={e => setInvoiceFile(e.target.files[0])} />
+                    <button
+                      onClick={() => invoiceInputRef.current?.click()}
+                      className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors"
+                    >
+                      <Paperclip size={13} /> {invoiceFile ? invoiceFile.name : 'ATTACH INVOICE'}
+                    </button>
+                    {invoiceFile && (
+                      <button
+                        onClick={handleSendInvoice}
+                        disabled={sendingInvoice}
+                        className="flex items-center gap-2 bg-ivory text-noir px-5 py-2.5 font-mono text-[11px] tracking-widest hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40"
+                      >
+                        {sendingInvoice ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                        {sendingInvoice ? 'SENDING...' : 'SEND TO CLIENT'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
               {/* Gallery uploader for completed bookings */}
               {booking.status === 'completed' && (
-                <div className="border-t border-halide/10 pt-5 mt-2">
+                <div className="border-t border-halide/10 pt-5 mt-2 px-6 pb-6">
                   <GalleryUploader booking={booking} />
                 </div>
               )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
