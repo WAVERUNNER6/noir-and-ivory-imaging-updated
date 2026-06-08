@@ -16,7 +16,12 @@ export default function GalleryViewer({ booking }) {
       const g = galleries[0];
       setGallery(g);
 
-      const photos = g.phase === 'edited' ? (g.edited_photos || []) : (g.photos || []);
+      // For completed status, show edited photos; otherwise show raw
+      const isCompleted = booking.status === 'completed';
+      const photos = (isCompleted || g.phase === 'edited')
+        ? (g.edited_photos || [])
+        : (g.photos || []);
+
       if (photos.length > 0) {
         const urls = await Promise.all(
           photos.map(uri =>
@@ -29,7 +34,7 @@ export default function GalleryViewer({ booking }) {
       setLoading(false);
     };
     load();
-  }, [booking.id]);
+  }, [booking.id, booking.status]);
 
   const prev = () => setLightbox(i => (i > 0 ? i - 1 : photoUrls.length - 1));
   const next = () => setLightbox(i => (i < photoUrls.length - 1 ? i + 1 : 0));

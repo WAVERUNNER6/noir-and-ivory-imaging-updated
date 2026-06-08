@@ -49,9 +49,9 @@ function InvoiceStep({ booking, portalToken, onDone }) {
 
         // Draw date signed
         const dateSigned = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        const { StandardFonts } = await import('pdf-lib');
+        const { StandardFonts, rgb } = await import('pdf-lib');
         const reg = await pdfDoc.embedFont(StandardFonts.Helvetica);
-        page.drawText(dateSigned, { x: 384, y: sigBoxY + 12, font: reg, size: 10, color: { type: 'RGB', red: 26/255, green: 26/255, blue: 26/255 } });
+        page.drawText(dateSigned, { x: 384, y: sigBoxY + 12, font: reg, size: 10, color: rgb(26/255, 26/255, 26/255) });
 
         // Embed signature image into the signature box
         page.drawImage(sigImage, {

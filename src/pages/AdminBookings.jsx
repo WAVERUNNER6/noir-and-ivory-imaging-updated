@@ -344,6 +344,13 @@ function BookingRow({ booking, onStatusChange }) {
                 </div>
               )}
 
+              {/* Final edited photos — show for completed status */}
+              {localStatus === 'completed' && (
+                <div className="border-t border-halide/10 pt-4">
+                  <GalleryViewer booking={{ ...booking, status: localStatus }} />
+                </div>
+              )}
+
               {/* Edited photo upload — show for editing status */}
               {localStatus === 'editing' && editingGallery && (
                 <div className="border-t border-halide/10 pt-4">
