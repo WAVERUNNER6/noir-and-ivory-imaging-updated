@@ -89,8 +89,8 @@ async function syncCalendarEvent(accessToken, booking, action) {
         ${booking.details ? `<p><strong>Details:</strong> ${booking.details}</p>` : ''}
       `,
     },
-    start: { dateTime: startDT, timeZone: 'Eastern Standard Time' },
-    end: { dateTime: endDT, timeZone: 'Eastern Standard Time' },
+    start: { dateTime: startDT, timeZone: 'Pacific Standard Time' },
+    end: { dateTime: endDT, timeZone: 'Pacific Standard Time' },
     location: { displayName: booking.location || 'TBD' },
     categories: booking.status === 'confirmed' ? ['Green category'] : [],
   };

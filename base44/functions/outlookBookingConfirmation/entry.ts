@@ -60,8 +60,8 @@ Deno.serve(async (req) => {
             ${booking.details ? `<p><strong>Details:</strong> ${booking.details}</p>` : ''}
           `,
         },
-        start: { dateTime: startDT, timeZone: 'Eastern Standard Time' },
-        end: { dateTime: endDTStr, timeZone: 'Eastern Standard Time' },
+        start: { dateTime: startDT, timeZone: 'Pacific Standard Time' },
+        end: { dateTime: endDTStr, timeZone: 'Pacific Standard Time' },
         location: { displayName: booking.location || 'TBD' },
       }),
     });
