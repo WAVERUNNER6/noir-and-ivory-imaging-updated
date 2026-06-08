@@ -87,6 +87,14 @@ Deno.serve(async (req) => {
       }),
     });
 
+    await base44.asServiceRole.entities.EmailLog.create({
+      booking_id: booking_id,
+      client_email: booking.client_email,
+      subject: label.subject,
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+    });
+
     return Response.json({ success: true, portal_url: portalUrl });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

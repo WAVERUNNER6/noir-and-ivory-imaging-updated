@@ -115,8 +115,30 @@ Deno.serve(async (req) => {
       }),
     });
 
+    await base44.asServiceRole.entities.EmailLog.create({
+      booking_id: booking.id,
+      client_email: booking.client_email,
+      subject: `Invoice for Your ${shootTypeLabel} Session`,
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+    });
+
     return Response.json({ success: true });
   } catch (error) {
+    try {
+      const base44Err = createClientFromRequest(req);
+      const { booking } = await req.clone().json().catch(() => ({}));
+      if (booking?.id) {
+        await base44Err.asServiceRole.entities.EmailLog.create({
+          booking_id: booking.id,
+          client_email: booking.client_email || '',
+          subject: 'Invoice Email',
+          status: 'failed',
+          error: error.message,
+          sent_at: new Date().toISOString(),
+        });
+      }
+    } catch {}
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

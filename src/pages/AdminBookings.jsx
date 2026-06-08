@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import InvoiceLineItemModal from '@/components/admin/InvoiceLineItemModal.jsx';
 import EditedPhotoUploader from '@/components/admin/EditedPhotoUploader.jsx';
 import GalleryViewer from '@/components/admin/GalleryViewer.jsx';
+import EmailStatusIndicator from '@/components/admin/EmailStatusIndicator.jsx';
 
 const STATUS_CONFIG = {
   pending:          { label: 'PENDING',          bg: 'bg-halide/10',     text: 'text-halide',     border: 'border-halide/30' },
@@ -329,6 +330,11 @@ function BookingRow({ booking, onStatusChange }) {
                   </div>
                 </div>
               )}
+
+              {/* Email status log */}
+              <div className="border-t border-halide/10 pt-4">
+                <EmailStatusIndicator bookingId={booking.id} />
+              </div>
 
               {/* Raw photo upload — show for confirmed status */}
               {localStatus === 'confirmed' && (
