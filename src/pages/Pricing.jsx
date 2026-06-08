@@ -63,7 +63,7 @@ const personalEventPackages = [
     description: 'From graduations and birthdays to engagement photos, baby showers, portraits, and everything in between — every milestone deserves to be remembered.',
     features: [
       'Event & portrait coverage',
-      'Edited digital images',
+      '15 edited digital images',
       'Online gallery delivery',
       'Print-ready files',
       'Personal usage license',
@@ -78,7 +78,7 @@ const personalEventPackages = [
     description: 'Timeless, elegant coverage of your most important day from start to finish.',
     features: [
       'Ceremony & reception coverage',
-      'Edited digital images',
+      '50 edited digital images',
       'Online gallery delivery',
       'Print-ready files',
       'Personal usage license',
