@@ -29,12 +29,18 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
 
-    // Fetch the invoice file and convert to base64
+    // Fetch the invoice file and convert to base64 (chunked to avoid stack overflow on large files)
     let attachments = [];
     if (invoice_url) {
       const fileRes = await fetch(invoice_url);
       const buffer = await fileRes.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+      }
+      const base64 = btoa(binary);
       const fileName = `Invoice-${booking.client_name?.replace(/\s+/g, '-') || 'Client'}.pdf`;
       attachments = [{
         '@odata.type': '#microsoft.graph.fileAttachment',
