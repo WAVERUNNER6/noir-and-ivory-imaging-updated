@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FileText, Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { FileText, Loader2, Upload } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { toast } from 'sonner';
 
@@ -25,6 +25,8 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
   const defaultPrice = getDefaultPrice(booking.package_request);
   const [amount, setAmount] = useState(defaultPrice);
   const [generating, setGenerating] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const fileInputRef = useRef();
 
   const generateInvoice = async () => {
     setGenerating(true);
@@ -66,19 +68,16 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const invoiceNum = `NIV-${(booking.id?.slice(-6) || Date.now().toString().slice(-6)).toUpperCase()}`;
       const fileName = `Invoice-${invoiceNum}-${(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
-      const file = new File([blob], fileName, { type: 'application/pdf' });
 
-      if (onGenerated) {
-        onGenerated(file);
-        toast.success('Invoice ready to send');
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
+      // Download to user's computer
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast.success('Invoice downloaded — review and re-upload to send');
     } catch (error) {
       console.error('Invoice generation error:', error);
       toast.error(`Failed to generate invoice: ${error.message}`);
@@ -87,26 +86,64 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
     }
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast.error('Please upload a PDF file');
+        return;
+      }
+      setUploadedFile(file);
+      if (onGenerated) {
+        onGenerated(file);
+      }
+      toast.success('Invoice ready to send');
+    }
+  };
+
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2">
-        <label className="font-mono text-[10px] text-halide/60 tracking-widest">AMOUNT</label>
-        <input
-          type="text"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-          placeholder="e.g. $850"
-          className="bg-transparent border-b border-halide/30 text-ivory font-mono text-[12px] tracking-wider w-28 pb-1 focus:outline-none focus:border-ivory transition-colors placeholder:text-halide/30"
-        />
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <label className="font-mono text-[10px] text-halide/60 tracking-widest">AMOUNT</label>
+          <input
+            type="text"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            placeholder="e.g. $850"
+            className="bg-transparent border-b border-halide/30 text-ivory font-mono text-[12px] tracking-wider w-28 pb-1 focus:outline-none focus:border-ivory transition-colors placeholder:text-halide/30"
+          />
+        </div>
+        <button
+          onClick={generateInvoice}
+          disabled={generating}
+          className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {generating ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
+          {generating ? 'GENERATING...' : 'DOWNLOAD INVOICE'}
+        </button>
       </div>
-      <button
-        onClick={generateInvoice}
-        disabled={generating}
-        className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {generating ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
-        {generating ? 'GENERATING...' : 'GENERATE & SEND'}
-      </button>
+
+      {/* File upload for reviewed invoice */}
+      <div className="flex items-center gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors"
+        >
+          <Upload size={13} />
+          {uploadedFile ? 'INVOICE ATTACHED' : 'ATTACH REVIEWED INVOICE'}
+        </button>
+        {uploadedFile && (
+          <span className="font-mono text-[10px] text-halide/60">{uploadedFile.name}</span>
+        )}
+      </div>
     </div>
   );
 }
