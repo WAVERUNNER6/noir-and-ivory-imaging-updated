@@ -32,7 +32,10 @@ Deno.serve(async (req) => {
     // Fetch the invoice file and convert to base64 (chunked to avoid stack overflow on large files)
     let attachments = [];
     if (invoice_url) {
-      const fileRes = await fetch(invoice_url);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const fileRes = await fetch(invoice_url, { signal: controller.signal });
+      clearTimeout(timeout);
       const buffer = await fileRes.arrayBuffer();
       const bytes = new Uint8Array(buffer);
       let binary = '';

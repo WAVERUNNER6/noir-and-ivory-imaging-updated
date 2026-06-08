@@ -162,12 +162,11 @@ function BookingRow({ booking, onStatusChange }) {
     const { file_url } = await base44.integrations.Core.UploadFile({ file: invoiceFile });
     // Store invoice_url on booking so portal can display it
     await base44.entities.Booking.update(booking.id, { invoice_url: file_url, status: 'invoice_sent' });
-    // Send the invoice email + portal link concurrently
+    // Send invoice email first (with attachment), then portal link
     const appUrl = window.location.origin;
-    await Promise.all([
-      base44.functions.invoke('sendInvoiceEmail', { booking, invoice_url: file_url }),
-      base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'invoice' }),
-    ]);
+    const updatedBooking = { ...booking, invoice_url: file_url };
+    await base44.functions.invoke('sendInvoiceEmail', { booking: updatedBooking, invoice_url: file_url });
+    await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'invoice' });
     toast.success(`Invoice sent to ${booking.client_email}`);
     setInvoiceFile(null);
     setLocalStatus('invoice_sent');
