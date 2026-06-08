@@ -141,24 +141,11 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
     // ── Divider ──
     page.drawLine({ start: { x: 40, y: height - 316 }, end: { x: width - 40, y: height - 316 }, thickness: 0.5, color: lightGray });
 
-    const form = pdfDoc.getForm();
-
     // ── Total Due block ──
     page.drawRectangle({ x: 350, y: height - 348, width: 205, height: 28, color: noir });
     page.drawText('TOTAL DUE', { x: 360, y: height - 338, font: bold, size: 9, color: ivory });
-
-    // Fillable Total Due field (editable in Acrobat)
-    const totalField = form.createTextField('total_due');
-    totalField.setText(displayAmount);
-    totalField.addToPage(page, {
-      x: 458, y: height - 346,
-      width: 92, height: 22,
-      textColor: ivory,
-      backgroundColor: c(22, 22, 22),
-      borderWidth: 0,
-      font: bold,
-      fontSize: 11,
-    });
+    const totalW = bold.widthOfTextAtSize(displayAmount, 11);
+    page.drawText(displayAmount, { x: width - 52 - totalW, y: height - 338, font: bold, size: 11, color: ivory });
 
     // ── Payment Methods ──
     const isPersonal = (booking.package_request || '').startsWith('Personal');
@@ -186,10 +173,9 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
       borderColor: c(160, 160, 160),
       borderWidth: 0.75,
     });
-    page.drawText('Draw Signature Here', {
+    page.drawText('Client Signature (sign here)', {
       x: sigBoxX + 14, y: sigBoxY + sigBoxH / 2 - 4,
-      font: reg, size: 10, color: c(200, 200, 200),
-      opacity: 0.6,
+      font: reg, size: 9, color: c(160, 160, 160),
     });
     page.drawLine({
       start: { x: sigBoxX + 14, y: sigBoxY + 14 },
@@ -199,16 +185,16 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
     page.drawText('Client Signature', { x: sigBoxX, y: sigBoxY - 12, font: reg, size: 7, color: halide });
 
     // Date signed box
-    const dateSigField = form.createTextField('date_signed');
-    dateSigField.addToPage(page, {
+    page.drawRectangle({
       x: 380, y: sigBoxY,
       width: 155, height: 34,
-      textColor: dark,
-      backgroundColor: c(247, 247, 247),
+      color: c(247, 247, 247),
       borderColor: c(180, 180, 180),
       borderWidth: 0.5,
-      font: reg,
-      fontSize: 11,
+    });
+    page.drawText('Date: ____________________', {
+      x: 390, y: sigBoxY + 12,
+      font: reg, size: 10, color: dark,
     });
     page.drawText('Date', { x: 380, y: sigBoxY - 12, font: reg, size: 7, color: halide });
 
