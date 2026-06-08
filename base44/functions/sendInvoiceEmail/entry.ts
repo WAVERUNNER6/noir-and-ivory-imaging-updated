@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     }
 
     const isRealEstate = booking.shoot_type === 'real_estate';
-    const isPersonal = booking.shoot_type === 'event' && (booking.package_request || '').startsWith('Personal');
+    const isPersonal = (booking.package_request || '').startsWith('Personal');
     const shootTypeLabel = isRealEstate ? 'Real Estate Photography' : isPersonal ? 'Personal Event Photography' : 'Business Event Photography';
 
     const htmlBody = `

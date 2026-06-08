@@ -169,15 +169,16 @@ async function generatePDF(booking, items, notes) {
   studioSigField.setText(`Authorized by Noir & Ivory Imaging — ${today}`);
   studioSigField.addToPage(page, { x: 0, y: -50, width: 1, height: 1, textColor: c(255,255,255), backgroundColor: c(255,255,255), borderWidth: 0, font: reg, fontSize: 1 });
 
-  // ── Client Signature ──
-  const sigSectionY = notesEndY - 60;
+  // ── Client Signature — anchored to bottom of page, always in a fixed position ──
+  // Footer is 44px; thank-you note is ~48px; sig box + labels ~90px; header ~60px = ~242 from bottom
+  const sigSectionY = 290; // fixed Y from page bottom, above footer
   page.drawLine({ start: { x: 40, y: sigSectionY }, end: { x: width - 40, y: sigSectionY }, thickness: 0.5, color: lightGray });
   page.drawText('CLIENT SIGNATURE', { x: 40, y: sigSectionY - 20, font: bold, size: 8, color: halide });
   page.drawText('By signing below, you confirm the Total Due and authorize Noir & Ivory Imaging to proceed.', {
     x: 40, y: sigSectionY - 34, font: reg, size: 8, color: mid,
   });
 
-  const sigBoxY = sigSectionY - 94;
+  const sigBoxY = sigSectionY - 100;
   page.drawRectangle({ x: 40, y: sigBoxY, width: 320, height: 60, color: c(250,250,250), borderColor: c(160,160,160), borderWidth: 0.75 });
   page.drawText('Draw Signature Here', { x: 54, y: sigBoxY + 26, font: reg, size: 10, color: c(200,200,200), opacity: 0.6 });
   page.drawLine({ start: { x: 54, y: sigBoxY + 14 }, end: { x: 346, y: sigBoxY + 14 }, thickness: 0.5, color: c(180,180,180) });
