@@ -41,13 +41,14 @@ function InvoiceStep({ booking, portalToken, onDone }) {
         const page = pages[0];
         const { height } = page.getSize();
 
-        // Signature box coordinates matching InvoiceGenerator layout
+        // Signature box coordinates — fixed position matching InvoiceLineItemModal
+        // sigSectionY = 290, sigBoxY = sigSectionY - 100 = 190
         const sigBoxX = 40;
-        const sigBoxY = height - 510;
+        const sigBoxY = 190;
         const sigBoxW = 320;
         const sigBoxH = 60;
 
-        // Draw date signed
+        // Draw date signed into the date field area (x:380, y:sigBoxY, w:155, h:34)
         const dateSigned = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         const { StandardFonts, rgb } = await import('pdf-lib');
         const reg = await pdfDoc.embedFont(StandardFonts.Helvetica);
