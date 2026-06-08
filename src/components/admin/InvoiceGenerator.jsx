@@ -157,9 +157,12 @@ export default function InvoiceGenerator({ booking }) {
       fontSize: 11,
     });
 
-    // ── Payment Methods ──
-    page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y: height - 376, font: bold, size: 9, color: dark });
-    page.drawText('Zelle  \u00b7  Venmo  \u00b7  Cash  \u00b7  Check', { x: 40, y: height - 392, font: reg, size: 9, color: mid });
+    // ── Payment Methods (only for Business & Real Estate) ──
+    const isPersonal = (booking.package_request || '').startsWith('Personal');
+    if (!isPersonal) {
+      page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y: height - 376, font: bold, size: 9, color: dark });
+      page.drawText('Zelle  \u00b7  Venmo  \u00b7  Cash  \u00b7  Check', { x: 40, y: height - 392, font: reg, size: 9, color: mid });
+    }
 
     // ── Client Signature Section ──
     page.drawLine({ start: { x: 40, y: height - 416 }, end: { x: width - 40, y: height - 416 }, thickness: 0.5, color: lightGray });
