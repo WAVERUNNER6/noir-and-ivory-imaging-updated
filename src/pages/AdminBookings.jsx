@@ -42,11 +42,10 @@ function BookingRow({ booking, onStatusChange }) {
     if (!invoiceFile) return;
     setSendingInvoice(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file: invoiceFile });
+    await base44.functions.invoke('sendInvoiceEmail', { booking, invoice_url: file_url });
     toast.success(`Invoice sent to ${booking.client_email}`);
     setInvoiceFile(null);
     setSendingInvoice(false);
-    // Fire-and-forget: send email in background without blocking UI
-    base44.functions.invoke('sendInvoiceEmail', { booking, invoice_url: file_url }).catch(() => {});
   };
 
   const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate' : 'Event';
