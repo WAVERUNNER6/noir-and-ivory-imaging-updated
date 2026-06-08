@@ -32,8 +32,12 @@ Deno.serve(async (req) => {
     // Create signed URL for invoice download
     let invoiceLink = '';
     if (invoice_uri) {
-      const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: invoice_uri, expires_in: 2592000 });
-      invoiceLink = signed_url;
+      try {
+        const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: invoice_uri, expires_in: 2592000 });
+        invoiceLink = signed_url;
+      } catch (e) {
+        console.error('Failed to create signed URL:', e.message);
+      }
     }
 
     const isRealEstate = booking.shoot_type === 'real_estate';

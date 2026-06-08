@@ -28,7 +28,7 @@ function BookingRow({ booking, onStatusChange }) {
   const [loading, setLoading] = useState(false);
   const [invoiceFile, setInvoiceFile] = useState(null);
   const [sendingInvoice, setSendingInvoice] = useState(false);
-  const invoiceInputRef = useRef();
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
 
   const handleAction = async (newStatus) => {
     setLoading(true);
@@ -39,12 +39,19 @@ function BookingRow({ booking, onStatusChange }) {
   };
 
   const handleSendInvoice = async () => {
-    if (!invoiceFile) return;
+    if (!invoiceFile) {
+      toast.error('Generate invoice first');
+      return;
+    }
     setSendingInvoice(true);
-    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file: invoiceFile });
-    await base44.functions.invoke('sendInvoiceEmail', { booking, invoice_uri: file_uri });
-    toast.success(`Invoice sent to ${booking.client_email}`);
-    setInvoiceFile(null);
+    try {
+      const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file: invoiceFile });
+      await base44.functions.invoke('sendInvoiceEmail', { booking, invoice_uri: file_uri });
+      toast.success(`Invoice sent to ${booking.client_email}`);
+      setInvoiceFile(null);
+    } catch (error) {
+      toast.error(`Failed to send invoice: ${error.message}`);
+    }
     setSendingInvoice(false);
   };
 
@@ -155,7 +162,10 @@ function BookingRow({ booking, onStatusChange }) {
                 <div className="border-t border-halide/10 pt-4 mt-2 space-y-3">
                   <p className="font-mono text-[9px] tracking-widest text-halide/50">INVOICE</p>
                   <div className="flex flex-wrap items-center gap-3">
-                    <InvoiceGenerator booking={booking} onGenerated={setInvoiceFile} />
+                    <div className="flex items-center gap-2">
+                      <InvoiceGenerator booking={booking} onGenerated={(file) => { setInvoiceFile(file); toast.success('Invoice generated'); }} />
+                      {invoiceFile && <Check size={13} className="text-green-400" />}
+                    </div>
                     {invoiceFile && (
                       <button
                         onClick={handleSendInvoice}
