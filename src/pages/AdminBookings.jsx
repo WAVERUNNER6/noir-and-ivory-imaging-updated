@@ -209,7 +209,7 @@ function BookingRow({ booking, onStatusChange }) {
         </div>
         <div className="hidden sm:block text-right shrink-0">
           <p className="font-mono text-[11px] text-halide tracking-wider">{booking.shoot_date}</p>
-          <p className="font-mono text-[10px] text-halide/50 mt-0.5">{booking.shoot_time || 'Flexible'}</p>
+          <p className="font-mono text-[10px] text-halide/50 mt-0.5">{booking.shoot_time ? `${booking.shoot_time}${booking.shoot_end_time ? ` — ${booking.shoot_end_time}` : ''}` : 'Flexible'}</p>
         </div>
         <StatusBadge status={localStatus} />
         <ChevronDown size={14} className={`text-halide/40 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
@@ -230,7 +230,7 @@ function BookingRow({ booking, onStatusChange }) {
                 {[
                   ['SHOOT TYPE', shootTypeLabel],
                   ['DATE', booking.shoot_date],
-                  ['TIME', booking.shoot_time || 'Flexible'],
+                  ['TIME', booking.shoot_time ? `${booking.shoot_time}${booking.shoot_end_time ? ` — ${booking.shoot_end_time}` : ''}` : 'Flexible'],
                   ['LOCATION', booking.location || 'TBD'],
                   ['PACKAGE', booking.package_request || 'Not specified'],
                   ['PHONE', booking.client_phone || '—'],
