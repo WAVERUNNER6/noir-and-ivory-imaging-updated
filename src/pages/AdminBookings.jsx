@@ -5,7 +5,7 @@ import { Check, X, Camera, Building2, Clock, ChevronDown, Paperclip, Send, Loade
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import GalleryUploader from '@/components/admin/GalleryUploader';
-import InvoiceGenerator from '@/components/admin/InvoiceGenerator';
+import InvoiceGenerator from '@/components/admin/InvoiceGenerator.jsx';
 
 const STATUS_CONFIG = {
   pending:   { label: 'PENDING',   bg: 'bg-halide/10',  text: 'text-halide',  border: 'border-halide/30' },
