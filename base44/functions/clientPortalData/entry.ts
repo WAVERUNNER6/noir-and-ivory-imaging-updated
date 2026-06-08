@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
         shoot_type: booking.shoot_type,
         package_request: booking.package_request,
         status: booking.status,
+        invoice_url: booking.invoice_url || null,
         signed_invoice_url: signedInvoiceUrl,
       },
       gallery: gallery ? {

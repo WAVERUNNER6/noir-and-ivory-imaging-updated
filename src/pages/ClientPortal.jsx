@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Upload, Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Loader2, Upload, Check, ChevronLeft, ChevronRight, X, FileText, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,6 +36,7 @@ function InvoiceStep({ booking, portalToken, onDone }) {
     setUploading(false);
   };
 
+  // Already signed — show confirmation
   if (booking.signed_invoice_url) {
     return (
       <div className="text-center py-12">
@@ -50,33 +51,66 @@ function InvoiceStep({ booking, portalToken, onDone }) {
 
   return (
     <div className="max-w-xl mx-auto">
-      <h2 className="font-display text-ivory text-4xl mb-3">Sign Your Invoice</h2>
+      <h2 className="font-display text-ivory text-4xl mb-3">Review &amp; Sign Your Invoice</h2>
       <p className="font-body text-halide/70 mb-8 leading-relaxed">
-        Please download, sign, and upload your signed invoice below to confirm your booking.
+        Please review your invoice below, sign it, and upload your signed copy to confirm your booking.
       </p>
-      <div
-        onClick={() => inputRef.current?.click()}
-        className="border border-dashed border-halide/30 hover:border-halide/60 transition-colors p-10 text-center cursor-pointer mb-6"
-      >
-        <input ref={inputRef} type="file" accept="application/pdf,image/*" className="hidden"
-          onChange={e => setFile(e.target.files[0])} />
-        <Upload size={20} className="text-halide/40 mx-auto mb-3" />
-        {file ? (
-          <p className="font-mono text-[11px] text-ivory tracking-wider">{file.name}</p>
+
+      {/* Step 1 — View / Download Invoice */}
+      <div className="mb-8">
+        <p className="font-mono text-[9px] tracking-[0.25em] text-halide/50 mb-3">STEP 1 — REVIEW YOUR INVOICE</p>
+        {booking.invoice_url ? (
+          <div className="border border-halide/20 bg-halide/5 p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <FileText size={18} className="text-halide shrink-0" />
+              <div>
+                <p className="font-mono text-[11px] text-ivory tracking-wider">INVOICE</p>
+                <p className="font-mono text-[10px] text-halide/50 mt-0.5">{booking.shoot_date} &middot; {booking.package_request || booking.shoot_type}</p>
+              </div>
+            </div>
+            <a
+              href={booking.invoice_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 border border-halide/30 text-halide px-4 py-2.5 font-mono text-[10px] tracking-widest hover:border-ivory hover:text-ivory transition-colors shrink-0"
+            >
+              <Download size={12} /> VIEW / DOWNLOAD
+            </a>
+          </div>
         ) : (
-          <p className="font-mono text-[11px] text-halide/50 tracking-wider">CLICK TO UPLOAD SIGNED INVOICE</p>
+          <div className="border border-halide/10 p-5 text-center">
+            <p className="font-mono text-[10px] text-halide/40 tracking-widest">Invoice will appear here once sent by your photographer.</p>
+          </div>
         )}
-        <p className="font-mono text-[9px] text-halide/30 tracking-widest mt-1">PDF OR IMAGE</p>
       </div>
-      {file && (
-        <button
-          onClick={handleSubmit}
-          disabled={uploading}
-          className="w-full bg-ivory text-noir py-4 font-mono text-[11px] tracking-[0.2em] hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+
+      {/* Step 2 — Upload Signed Copy */}
+      <div>
+        <p className="font-mono text-[9px] tracking-[0.25em] text-halide/50 mb-3">STEP 2 — UPLOAD YOUR SIGNED COPY</p>
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="border border-dashed border-halide/30 hover:border-halide/60 transition-colors p-10 text-center cursor-pointer mb-4"
         >
-          {uploading ? <><Loader2 size={13} className="animate-spin" /> UPLOADING...</> : 'SUBMIT SIGNED INVOICE'}
-        </button>
-      )}
+          <input ref={inputRef} type="file" accept="application/pdf,image/*" className="hidden"
+            onChange={e => setFile(e.target.files[0])} />
+          <Upload size={20} className="text-halide/40 mx-auto mb-3" />
+          {file ? (
+            <p className="font-mono text-[11px] text-ivory tracking-wider">{file.name}</p>
+          ) : (
+            <p className="font-mono text-[11px] text-halide/50 tracking-wider">CLICK TO UPLOAD SIGNED INVOICE</p>
+          )}
+          <p className="font-mono text-[9px] text-halide/30 tracking-widest mt-1">PDF OR IMAGE</p>
+        </div>
+        {file && (
+          <button
+            onClick={handleSubmit}
+            disabled={uploading}
+            className="w-full bg-ivory text-noir py-4 font-mono text-[11px] tracking-[0.2em] hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+          >
+            {uploading ? <><Loader2 size={13} className="animate-spin" /> UPLOADING...</> : 'SUBMIT SIGNED INVOICE'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
