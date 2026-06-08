@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
         message: {
           subject: `⏳ New ${shootTypeLabel} Booking — ${booking.client_name}`,
           body: { contentType: 'HTML', content: htmlBody },
-          toRecipients: [{ emailAddress: { address: 'noirandivoryimaging@outlook.com' } }],
+          toRecipients: [{ emailAddress: { address: 'studio@noirandivoryimaging.com' } }],
         },
         saveToSentItems: true,
       }),

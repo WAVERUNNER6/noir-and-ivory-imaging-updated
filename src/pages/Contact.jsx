@@ -12,7 +12,7 @@ export default function Contact() {
     e.preventDefault();
     setSending(true);
     await base44.integrations.Core.SendEmail({
-      to: 'hello@noirandivory.com',
+      to: 'studio@noirandivoryimaging.com',
       subject: `Contact Form: ${form.name}`,
       body: `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
     });
@@ -74,9 +74,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-mono text-[11px] text-halide tracking-widest mb-1">EMAIL</p>
-                    <a href="mailto:hello@noirandivory.com" className="font-body text-noir hover:text-halide transition-colors">noirandivoryimaging@outlook.com
-
-                    </a>
+                    <a href="mailto:studio@noirandivoryimaging.com" className="font-body text-noir hover:text-halide transition-colors">studio@noirandivoryimaging.com</a>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">

@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
                 </div>
               `,
             },
-            toRecipients: [{ emailAddress: { address: 'noirandivoryimaging@outlook.com' } }],
+            toRecipients: [{ emailAddress: { address: 'studio@noirandivoryimaging.com' } }],
           },
           saveToSentItems: true,
         }),
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
                 </div>
               `,
             },
-            toRecipients: [{ emailAddress: { address: 'noirandivoryimaging@outlook.com' } }],
+            toRecipients: [{ emailAddress: { address: 'studio@noirandivoryimaging.com' } }],
           },
           saveToSentItems: true,
         }),

@@ -220,7 +220,7 @@ export default function InvoiceGenerator({ booking }) {
     page.drawText('Thank you for choosing Noir & Ivory Imaging. We look forward to capturing your moments.', {
       x: 40, y: height - 564, font: reg, size: 8, color: halide,
     });
-    page.drawText('Contact us: noirandivoryimaging@outlook.com', {
+    page.drawText('Contact us: studio@noirandivoryimaging.com', {
       x: 40, y: height - 578, font: reg, size: 8, color: halide,
     });
 

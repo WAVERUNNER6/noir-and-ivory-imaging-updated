@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
               We accept payment via <strong>Zelle, Venmo, Cash, or Check</strong>. Please don't hesitate to reach out with any questions.
             </p>
           </div>
-          <p style="font-size: 14px; color: #8E8E8E; margin: 0;">noirandivoryimaging@outlook.com</p>
+          <p style="font-size: 14px; color: #8E8E8E; margin: 0;">studio@noirandivoryimaging.com</p>
         </div>
         <div style="padding: 20px 40px; background: #f8f7f5;">
           <p style="font-family: monospace; font-size: 10px; letter-spacing: 2px; color: #8E8E8E; margin: 0; text-transform: uppercase;">© Noir & Ivory Imaging — All rights reserved</p>

@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
               <p style="font-size: 14px; color: #1a1a1a; line-height: 1.7; margin: 0 0 8px 0;">We accept payment via <strong>Zelle, Venmo, Cash, or Check</strong>. An invoice will be sent to you separately with full payment details.</p>
             </div>
             <p style="font-size: 14px; color: #8E8E8E; line-height: 1.6; margin: 0 0 8px 0;">Questions? Reply to this email or contact us directly.</p>
-            <p style="font-size: 14px; color: #8E8E8E; margin: 0;">noirandivoryimaging@outlook.com</p>
+            <p style="font-size: 14px; color: #8E8E8E; margin: 0;">studio@noirandivoryimaging.com</p>
           </div>
           <div style="padding: 20px 40px; background: #f8f7f5;">
             <p style="font-family: monospace; font-size: 10px; letter-spacing: 2px; color: #8E8E8E; margin: 0; text-transform: uppercase;">© Noir & Ivory Imaging — All rights reserved</p>
@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
             subject: `Noir & Ivory Imaging — ${subjectPrefix}`,
             body: { contentType: 'HTML', content: htmlBody },
             toRecipients: [{ emailAddress: { address: booking.client_email } }],
-            ccRecipients: [{ emailAddress: { address: 'noirandivoryimaging@outlook.com' } }],
+            ccRecipients: [{ emailAddress: { address: 'studio@noirandivoryimaging.com' } }],
           },
           saveToSentItems: true,
         }),
