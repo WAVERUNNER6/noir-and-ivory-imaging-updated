@@ -258,7 +258,7 @@ export default function Booking() {
   const canProceed = () => {
     if (step === 0) return !!form.shoot_type;
     if (step === 1) return !!selectedDate;
-    if (step === 2) return !!(form.client_name && form.client_email && form.shoot_time && form.shoot_end_time && form.details.trim());
+    if (step === 2) return !!(form.client_name && form.client_email && form.package_request && form.shoot_time && form.shoot_end_time && form.details.trim());
     return true;
   };
 
