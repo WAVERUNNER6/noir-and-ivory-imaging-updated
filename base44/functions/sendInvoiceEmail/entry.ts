@@ -29,12 +29,18 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
 
-    // Fetch the invoice file and convert to base64
+    // Lock the invoice PDF (signature-only) and fetch it
     let attachments = [];
     if (invoice_url) {
-      const fileRes = await fetch(invoice_url);
-      const buffer = await fileRes.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      // Call the lock function to make it signature-only
+      const lockRes = await fetch(new URL('/lockInvoiceForSignature', Deno.env.get('BASE44_APP_URL') || 'http://localhost:5173').href, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file_url: invoice_url }),
+      });
+
+      const lockedBuffer = await lockRes.arrayBuffer();
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(lockedBuffer)));
       const fileName = `Invoice-${booking.client_name?.replace(/\s+/g, '-') || 'Client'}.pdf`;
       attachments = [{
         '@odata.type': '#microsoft.graph.fileAttachment',
