@@ -141,8 +141,19 @@ export default function InvoiceGenerator({ booking }) {
     // ── Total Due block ──
     page.drawRectangle({ x: 350, y: height - 348, width: 205, height: 28, color: noir });
     page.drawText('TOTAL DUE', { x: 360, y: height - 338, font: bold, size: 9, color: ivory });
-    const totalW = bold.widthOfTextAtSize(displayAmount, 11);
-    page.drawText(displayAmount, { x: width - 52 - totalW, y: height - 338, font: bold, size: 11, color: ivory });
+
+    // Fillable Total Due field (editable in Acrobat)
+    const totalField = form.createTextField('total_due');
+    totalField.setText(displayAmount);
+    totalField.addToPage(page, {
+      x: 458, y: height - 346,
+      width: 92, height: 22,
+      textColor: ivory,
+      backgroundColor: c(22, 22, 22),
+      borderWidth: 0,
+      font: bold,
+      fontSize: 11,
+    });
 
     // ── Payment Methods ──
     page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y: height - 376, font: bold, size: 9, color: dark });
