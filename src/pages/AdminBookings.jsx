@@ -172,7 +172,7 @@ function BookingRow({ booking, onStatusChange }) {
       const appUrl = window.location.origin;
       const updatedBooking = { ...booking, invoice_url: file_url };
       try {
-        await base44.functions.invoke('sendInvoiceEmail', { booking: updatedBooking, invoice_url: file_url });
+        await base44.functions.invoke('sendInvoiceEmail', { booking: updatedBooking, invoice_url: file_url, app_url: appUrl });
         await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'invoice' });
         toast.success(`Invoice uploaded and sent to ${booking.client_email}`);
       } catch (emailErr) {

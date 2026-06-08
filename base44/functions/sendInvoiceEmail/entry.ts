@@ -22,10 +22,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { booking, invoice_url } = await req.json();
+    const { booking, invoice_url, app_url } = await req.json();
     if (!booking?.client_email) {
       return Response.json({ error: 'Missing client email' }, { status: 400 });
     }
+
+    // Ensure booking has a portal token
+    let portalToken = booking.portal_token;
+    if (!portalToken) {
+      portalToken = Array.from(crypto.getRandomValues(new Uint8Array(24)))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      await base44.asServiceRole.entities.Booking.update(booking.id, { portal_token: portalToken });
+    }
+
+    const baseUrl = app_url || 'https://app.base44.com';
+    const portalUrl = `${baseUrl}/portal?token=${portalToken}`;
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
 
@@ -73,6 +84,15 @@ Deno.serve(async (req) => {
               We accept payment via <strong>Zelle, Venmo, Cash, or Check</strong>. Please don't hesitate to reach out with any questions.
             </p>
           </div>
+          <p style="font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+            Please review, sign, and return the invoice using your secure client portal:
+          </p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${portalUrl}" style="display: inline-block; background: #0A0A0A; color: #F9F7F5; padding: 16px 40px; font-family: monospace; font-size: 12px; letter-spacing: 3px; text-decoration: none; text-transform: uppercase;">
+              SIGN &amp; RETURN INVOICE →
+            </a>
+          </div>
+          <p style="font-size: 13px; color: #8E8E8E; line-height: 1.6; margin: 0 0 16px 0;">This is a private link for your session only. Questions? Reply to this email.</p>
           <p style="font-size: 14px; color: #8E8E8E; margin: 0;">studio@noirandivoryimaging.com</p>
         </div>
         <div style="padding: 20px 40px; background: #f8f7f5;">
