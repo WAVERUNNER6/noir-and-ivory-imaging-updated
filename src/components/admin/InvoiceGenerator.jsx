@@ -68,8 +68,14 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const invoiceNum = `NIV-${(booking.id?.slice(-6) || Date.now().toString().slice(-6)).toUpperCase()}`;
       const fileName = `Invoice-${invoiceNum}-${(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
+      const file = new File([blob], fileName, { type: 'application/pdf' });
 
-      // Download to user's computer
+      // Pass file to parent for sending
+      if (onGenerated) {
+        onGenerated(file);
+      }
+
+      // Also download to user's computer
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -77,7 +83,7 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast.success('Invoice downloaded — review and re-upload to send');
+      toast.success('Invoice generated & ready to send');
     } catch (error) {
       console.error('Invoice generation error:', error);
       toast.error(`Failed to generate invoice: ${error.message}`);
