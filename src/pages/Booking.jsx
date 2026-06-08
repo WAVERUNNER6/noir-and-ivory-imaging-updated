@@ -240,6 +240,19 @@ export default function Booking() {
     details: ''
   });
 
+  // Expand a booking's start→end into all covered time slots
+  const expandSlots = (shoot_time, shoot_end_time) => {
+    if (!shoot_time) return [];
+    const startIdx = TIME_SLOTS.indexOf(shoot_time);
+    if (startIdx === -1) return [shoot_time];
+    // If no end time, just block the start slot
+    if (!shoot_end_time) return [shoot_time];
+    const endIdx = TIME_SLOTS.indexOf(shoot_end_time);
+    if (endIdx === -1) return [shoot_time];
+    // Block every slot from start up to (but not including) end
+    return TIME_SLOTS.slice(startIdx, endIdx);
+  };
+
   // Load booked time slots whenever selected date changes
   useEffect(() => {
     if (!selectedDate) return;
@@ -247,10 +260,10 @@ export default function Booking() {
     base44.entities.Booking.filter({ shoot_date: dateStr }).then(bookings => {
       const pending = bookings
         .filter(b => b.status === 'pending' && b.shoot_time)
-        .map(b => b.shoot_time);
+        .flatMap(b => expandSlots(b.shoot_time, b.shoot_end_time));
       const confirmed = bookings
-        .filter(b => ['confirmed', 'completed'].includes(b.status) && b.shoot_time)
-        .map(b => b.shoot_time);
+        .filter(b => ['confirmed', 'invoice_sent', 'selecting_photos', 'editing', 'completed'].includes(b.status) && b.shoot_time)
+        .flatMap(b => expandSlots(b.shoot_time, b.shoot_end_time));
       setBookedSlots({ pending, confirmed });
     });
   }, [selectedDate]);
