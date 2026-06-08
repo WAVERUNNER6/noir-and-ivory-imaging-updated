@@ -66,7 +66,8 @@ Deno.serve(async (req) => {
 
     const isRealEstate = booking.shoot_type === 'real_estate';
     const isPersonal = (booking.package_request || '').startsWith('Personal');
-    const shootTypeLabel = isRealEstate ? 'Real Estate Photography' : isPersonal ? 'Personal Event Photography' : 'Business Event Photography';
+    const isCustom = (booking.package_request || '').startsWith('Custom');
+    const shootTypeLabel = isRealEstate ? 'Real Estate Photography' : isPersonal ? 'Personal Event Photography' : isCustom ? 'Custom Photography Project' : 'Business Event Photography';
 
     const htmlBody = `
       <div style="font-family: 'Georgia', serif; max-width: 580px; margin: 0 auto; color: #1a1a1a; background: #fff;">
@@ -81,7 +82,7 @@ Deno.serve(async (req) => {
           </p>
           <div style="background: #f8f7f5; padding: 24px; margin-bottom: 28px;">
             <p style="font-size: 14px; color: #1a1a1a; line-height: 1.7; margin: 0 0 8px 0;">
-              We accept payment via <strong>${isPersonal ? 'Zelle, Venmo, or Cash' : 'Zelle, Venmo, Cash, or Check'}</strong>. Please don't hesitate to reach out with any questions.
+              We accept payment via <strong>${(isPersonal || isCustom) ? 'Zelle, Venmo, or Cash' : 'Zelle, Venmo, Cash, or Check'}</strong>. Please don't hesitate to reach out with any questions.
             </p>
           </div>
           <p style="font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">

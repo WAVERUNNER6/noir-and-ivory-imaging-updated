@@ -102,13 +102,15 @@ async function generatePDF(booking, items, notes) {
   page.drawText('AMOUNT', { x: width - 52 - bold.widthOfTextAtSize('AMOUNT', 8), y: height - 254, font: bold, size: 8, color: halide });
 
   // ── Line Items ──
+  // Signature section is fixed at y=290; content must stay above y=320 to avoid overlap
+  const CONTENT_FLOOR = 320;
   let rowY = height - 290;
   items.forEach((item, idx) => {
-    if (rowY < 200) return; // safety cutoff
+    if (rowY < CONTENT_FLOOR) return; // stop before signature section
 
     page.drawText(item.service || 'Service', { x: 52, y: rowY, font: reg, size: 10, color: dark });
 
-    // Wrap description
+    // Wrap description — track actual height used
     const maxDescW = 200;
     const words = (item.description || '').split(' ');
     let line = '';
@@ -133,7 +135,9 @@ async function generatePDF(booking, items, notes) {
       page.drawLine({ start: { x: 40, y: rowY - 12 }, end: { x: width - 40, y: rowY - 12 }, thickness: 0.3, color: c(235, 235, 235) });
     }
 
-    rowY -= 32;
+    // Step down by the max of: wrapped description height vs standard row height
+    const descLines = Math.max(1, rowY - descY) / 14 + 1;
+    rowY -= Math.max(32, descLines * 14 + 10);
   });
 
   // ── Divider ──
@@ -159,8 +163,10 @@ async function generatePDF(booking, items, notes) {
   }
 
   // ── Payment Methods ──
-  const isPersonalPkg = (booking.package_request || '').startsWith('Personal');
-  const paymentMethods = isPersonalPkg ? 'Zelle  \u00b7  Venmo  \u00b7  Cash' : 'Zelle  \u00b7  Venmo  \u00b7  Cash  \u00b7  Check';
+  const pkg = booking.package_request || '';
+  const isPersonalPkg = pkg.startsWith('Personal');
+  const isCustomPkg = pkg.startsWith('Custom');
+  const paymentMethods = (isPersonalPkg || isCustomPkg) ? 'Zelle  \u00b7  Venmo  \u00b7  Cash' : 'Zelle  \u00b7  Venmo  \u00b7  Cash  \u00b7  Check';
   page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y: notesEndY - 10, font: bold, size: 9, color: dark });
   page.drawText(paymentMethods, { x: 40, y: notesEndY - 26, font: reg, size: 9, color: mid });
 
