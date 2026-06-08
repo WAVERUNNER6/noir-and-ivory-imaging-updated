@@ -38,39 +38,35 @@ function parseDateTime(dateStr, timeStr) {
 async function syncCalendarEvent(accessToken, booking, action) {
   const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate Photography' : 'Event Photography';
   const calendarSubject = `📷 ${shootTypeLabel} — ${booking.client_name}`;
-  const pendingSubject = `⏳ ${shootTypeLabel} — ${booking.client_name} (PENDING)`;
-
-  // Search for existing confirmed event (📷 prefix)
   const dateStr = booking.shoot_date;
-  const [searchRes, pendingSearchRes] = await Promise.all([
-    graphRequest(accessToken,
-      `/me/events?$filter=startsWith(subject,'📷 ${shootTypeLabel} — ${booking.client_name}')&$select=id,subject,start`
-    ).catch(() => null),
-    graphRequest(accessToken,
-      `/me/events?$filter=startsWith(subject,'⏳ ${shootTypeLabel} — ${booking.client_name}')&$select=id,subject,start`
-    ).catch(() => null),
-  ]);
 
-  const existingEvent = searchRes?.value?.find(e =>
-    e.subject === calendarSubject && e.start?.dateTime?.startsWith(dateStr)
-  );
-  const pendingEvent = pendingSearchRes?.value?.find(e =>
-    e.subject === pendingSubject && e.start?.dateTime?.startsWith(dateStr)
+  // Fetch all events on that date and match by client name in subject (avoids emoji encoding issues in filter)
+  const startOfDay = `${dateStr}T00:00:00`;
+  const endOfDay = `${dateStr}T23:59:59`;
+  const allEventsRes = await graphRequest(accessToken,
+    `/me/calendarView?startDateTime=${startOfDay}&endDateTime=${endOfDay}&$select=id,subject,start`
+  ).catch(() => null);
+
+  const clientName = booking.client_name;
+  const matchingEvents = (allEventsRes?.value || []).filter(e =>
+    e.subject && e.subject.includes(clientName) && e.subject.includes(shootTypeLabel)
   );
 
   if (action === 'delete' || booking.status === 'cancelled' || booking.status === 'completed') {
-    // Delete both the confirmed and pending calendar events
-    await Promise.all([
-      existingEvent ? graphRequest(accessToken, `/me/events/${existingEvent.id}`, { method: 'DELETE' }).catch(() => null) : null,
-      pendingEvent ? graphRequest(accessToken, `/me/events/${pendingEvent.id}`, { method: 'DELETE' }).catch(() => null) : null,
-    ]);
+    // Delete ALL matching calendar events for this booking
+    await Promise.all(
+      matchingEvents.map(e => graphRequest(accessToken, `/me/events/${e.id}`, { method: 'DELETE' }).catch(() => null))
+    );
     return;
   }
 
-  // Also clean up the pending event when status moves to confirmed
-  if (pendingEvent) {
-    await graphRequest(accessToken, `/me/events/${pendingEvent.id}`, { method: 'DELETE' }).catch(() => null);
-  }
+  // For other status updates, remove any pending (⏳) events and keep/update the main one
+  const pendingEvents = matchingEvents.filter(e => e.subject.includes('PENDING'));
+  await Promise.all(
+    pendingEvents.map(e => graphRequest(accessToken, `/me/events/${e.id}`, { method: 'DELETE' }).catch(() => null))
+  );
+
+  const existingEvent = matchingEvents.find(e => !e.subject.includes('PENDING'));
 
   const startDT = parseDateTime(dateStr, booking.shoot_time || '09:00 AM');
   const endDate = new Date(startDT);
