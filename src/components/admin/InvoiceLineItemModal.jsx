@@ -159,8 +159,10 @@ async function generatePDF(booking, items, notes) {
   }
 
   // ── Payment Methods ──
+  const isPersonalPkg = (booking.package_request || '').startsWith('Personal');
+  const paymentMethods = isPersonalPkg ? 'Zelle  \u00b7  Venmo  \u00b7  Cash' : 'Zelle  \u00b7  Venmo  \u00b7  Cash  \u00b7  Check';
   page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y: notesEndY - 10, font: bold, size: 9, color: dark });
-  page.drawText('Zelle  \u00b7  Venmo  \u00b7  Cash  \u00b7  Check', { x: 40, y: notesEndY - 26, font: reg, size: 9, color: mid });
+  page.drawText(paymentMethods, { x: 40, y: notesEndY - 26, font: reg, size: 9, color: mid });
 
   // ── Studio authorization (off-page) ──
   const studioSigField = form.createTextField('studio_authorization');
