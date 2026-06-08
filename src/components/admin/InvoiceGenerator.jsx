@@ -41,108 +41,142 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
       const c = (r, g, b) => rgb(r / 255, g / 255, b / 255);
       const noir = c(10, 10, 10);
       const ivory = c(249, 247, 245);
-      const dark = c(26, 26, 26);
-      const mid = c(140, 140, 140);
-      const halide = c(142, 142, 142);
-      const lightGray = c(220, 220, 220);
+      const darkGray = c(100, 100, 100);
+      const lightGray = c(240, 240, 240);
+      const borderGray = c(200, 200, 200);
 
-      // ── Header ──
-      page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: noir });
-      page.drawText('NOIR & IVORY IMAGING', { x: 40, y: height - 30, font: bold, size: 10, color: ivory });
-      page.drawText('INVOICE', { x: width - 200, y: height - 30, font: bold, size: 24, color: ivory });
-
-      // ── Invoice Number & Date ──
+      // ── BLACK HEADER ──
+      page.drawRectangle({ x: 0, y: height - 90, width, height: 90, color: noir });
+      
+      // Left side: brand + title
+      page.drawText('NOIR & IVORY IMAGING', { x: 40, y: height - 35, font: bold, size: 10, color: ivory });
+      page.drawText('INVOICE', { x: 40, y: height - 65, font: bold, size: 32, color: ivory });
+      
+      // Right side: invoice details
       const invoiceNum = `NIV-${(booking.id?.slice(-6) || 'TEMP').toUpperCase()}`;
-      page.drawText('INVOICE #', { x: 40, y: height - 110, font: bold, size: 9, color: dark });
-      page.drawText(invoiceNum, { x: 40, y: height - 128, font: reg, size: 11, color: dark });
-      page.drawText('DATE', { x: 280, y: height - 110, font: bold, size: 9, color: dark });
-      page.drawText(new Date().toLocaleDateString(), { x: 280, y: height - 128, font: reg, size: 11, color: dark });
+      page.drawText(`Invoice No: ${invoiceNum}`, { x: width - 200, y: height - 35, font: reg, size: 10, color: ivory });
+      page.drawText(`Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, { x: width - 200, y: height - 55, font: reg, size: 10, color: ivory });
 
-      // ── Bill To ──
-      page.drawText('BILL TO', { x: 40, y: height - 168, font: bold, size: 9, color: dark });
-      page.drawText(booking.client_name || '—', { x: 40, y: height - 188, font: bold, size: 12, color: dark });
-      page.drawText(booking.client_email || '', { x: 40, y: height - 205, font: reg, size: 9, color: mid });
-      if (booking.client_phone) page.drawText(booking.client_phone, { x: 40, y: height - 220, font: reg, size: 9, color: mid });
+      // ── TWO-COLUMN SECTION: BILL TO + SESSION DETAILS ──
+      let y = height - 140;
+      
+      // Bill To (Left)
+      page.drawText('BILL TO', { x: 40, y, font: bold, size: 9, color: darkGray });
+      y -= 20;
+      page.drawText(booking.client_name || '—', { x: 40, y, font: bold, size: 12, color: noir });
+      y -= 18;
+      page.drawText(booking.client_email || '', { x: 40, y, font: reg, size: 10, color: noir });
+      y -= 15;
+      page.drawText(booking.client_phone || '', { x: 40, y, font: reg, size: 10, color: noir });
 
-      // ── Table Header ──
-      page.drawLine({ start: { x: 40, y: height - 250 }, end: { x: width - 40, y: height - 250 }, thickness: 1, color: lightGray });
-      page.drawText('DESCRIPTION', { x: 40, y: height - 265, font: bold, size: 9, color: dark });
-      page.drawText('DATE', { x: 280, y: height - 265, font: bold, size: 9, color: dark });
-      page.drawText('AMOUNT DUE', { x: width - 140, y: height - 265, font: bold, size: 9, color: dark });
-      page.drawLine({ start: { x: 40, y: height - 280 }, end: { x: width - 40, y: height - 280 }, thickness: 1, color: lightGray });
-
-      // ── Service Item ──
-      page.drawText(booking.package_request || 'Photography Services', { x: 40, y: height - 305, font: reg, size: 10, color: dark });
-      page.drawText(booking.shoot_date || '—', { x: 280, y: height - 305, font: reg, size: 10, color: dark });
-      page.drawText(amount || '—', { x: width - 140, y: height - 305, font: bold, size: 11, color: dark });
-
-      // ── Subtotal/Total ──
-      page.drawLine({ start: { x: 40, y: height - 340 }, end: { x: width - 40, y: height - 340 }, thickness: 0.5, color: lightGray });
-      page.drawText('TOTAL DUE', { x: width - 220, y: height - 358, font: bold, size: 10, color: dark });
-      page.drawRectangle({ x: width - 220, y: height - 380, width: 180, height: 28, color: noir });
-      page.drawText(amount || '—', { x: width - 210, y: height - 363, font: bold, size: 14, color: ivory });
-
-      // ── Payment Methods ──
-      const isPersonal = (booking.package_request || '').startsWith('Personal');
-      const paymentMethods = isPersonal ? 'Zelle  \u00b7  Venmo  \u00b7  Cash' : 'Zelle  \u00b7  Venmo  \u00b7  Cash  \u00b7  Check';
-      page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y: height - 410, font: bold, size: 9, color: dark });
-      page.drawText(paymentMethods, { x: 40, y: height - 428, font: reg, size: 9, color: mid });
-
-      // ── Terms ──
-      page.drawLine({ start: { x: 40, y: height - 455 }, end: { x: width - 40, y: height - 455 }, thickness: 0.5, color: lightGray });
-      page.drawText('TERMS & CONDITIONS', { x: 40, y: height - 475, font: bold, size: 9, color: dark });
-      page.drawText('Payment is due within 14 days of invoice. Please include the invoice number with your payment.', {
-        x: 40, y: height - 493, font: reg, size: 8, color: mid,
+      // Session Details (Right)
+      y = height - 140;
+      page.drawText('SESSION DETAILS', { x: 350, y, font: bold, size: 9, color: darkGray });
+      y -= 20;
+      
+      const sessionDetails = [
+        ['Date:', booking.shoot_date || 'TBD'],
+        ['Time:', booking.shoot_time || 'TBD'],
+        ['Location:', booking.location || 'TBD'],
+      ];
+      
+      sessionDetails.forEach(([label, val]) => {
+        page.drawText(label, { x: 350, y, font: reg, size: 10, color: darkGray });
+        page.drawText(val, { x: 450, y, font: reg, size: 10, color: noir });
+        y -= 18;
       });
 
-      // ── Signature Section ──
-      page.drawLine({ start: { x: 40, y: height - 530 }, end: { x: width - 40, y: height - 530 }, thickness: 0.5, color: lightGray });
-      page.drawText('CLIENT SIGNATURE', { x: 40, y: height - 550, font: bold, size: 8, color: halide });
-      page.drawText('By signing below, you authorize Noir & Ivory Imaging to proceed.', {
-        x: 40, y: height - 565, font: reg, size: 7, color: mid,
+      // ── SERVICE TABLE ──
+      y = height - 270;
+      page.drawLine({ start: { x: 40, y }, end: { x: width - 40, y }, thickness: 1, color: lightGray });
+      y -= 20;
+      
+      page.drawText('SERVICE', { x: 40, y, font: bold, size: 9, color: darkGray });
+      page.drawText('DESCRIPTION', { x: 180, y, font: bold, size: 9, color: darkGray });
+      page.drawText('AMOUNT', { x: width - 120, y, font: bold, size: 9, color: darkGray });
+      
+      y -= 25;
+      page.drawRectangle({ x: 40, y: y - 35, width: width - 80, height: 40, color: lightGray });
+      page.drawText('Photography Description', { x: 55, y, font: reg, size: 10, color: noir });
+      page.drawText('Photography Services', { x: 180, y, font: reg, size: 10, color: noir });
+      page.drawText(amount || 'TBD', { x: width - 120, y, font: bold, size: 10, color: noir });
+      
+      y -= 60;
+      page.drawLine({ start: { x: 40, y }, end: { x: width - 40, y }, thickness: 1, color: lightGray });
+
+      // ── TOTAL DUE BOX (black) ──
+      y -= 30;
+      const totalBoxWidth = 250;
+      const totalBoxX = width - totalBoxWidth - 40;
+      page.drawRectangle({ x: totalBoxX, y: y - 30, width: totalBoxWidth, height: 40, color: noir });
+      page.drawText('TOTAL DUE', { x: totalBoxX + 20, y: y - 15, font: bold, size: 10, color: ivory });
+      page.drawText(amount || 'TBD', { x: totalBoxX + 140, y: y - 15, font: bold, size: 12, color: ivory });
+
+      // ── PAYMENT METHODS ──
+      y -= 80;
+      page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y, font: bold, size: 9, color: noir });
+      y -= 15;
+      page.drawText('Zelle · Venmo · Cash · Check', { x: 40, y, font: reg, size: 10, color: noir });
+
+      // ── CLIENT SIGNATURE SECTION ──
+      y -= 45;
+      page.drawLine({ start: { x: 40, y }, end: { x: width - 40, y }, thickness: 1, color: lightGray });
+      
+      y -= 25;
+      page.drawText('CLIENT SIGNATURE', { x: 40, y, font: bold, size: 9, color: darkGray });
+      y -= 15;
+      page.drawText('By signing below, you confirm the Total Due and authorize Noir & Ivory Imaging to proceed.', {
+        x: 40, y, font: reg, size: 8, color: darkGray,
       });
 
-      const sigBoxY = height - 620;
+      y -= 35;
+      // Signature box
       page.drawRectangle({
-        x: 40, y: sigBoxY,
-        width: 300, height: 55,
-        color: c(250, 250, 250),
-        borderColor: c(180, 180, 180),
-        borderWidth: 0.75,
+        x: 40, y: y - 60, width: 430, height: 70,
+        color: c(255, 255, 255),
+        borderColor: borderGray,
+        borderWidth: 1,
       });
-      page.drawText('Client Signature', { x: 40, y: sigBoxY + 28, font: reg, size: 8, color: c(160, 160, 160) });
+      page.drawText('Draw Signature Here', { x: 50, y: y - 30, font: reg, size: 11, color: c(220, 220, 220) });
       page.drawLine({
-        start: { x: 50, y: sigBoxY + 10 },
-        end: { x: 320, y: sigBoxY + 10 },
-        thickness: 0.5, color: c(180, 180, 180),
+        start: { x: 50, y: y - 50 },
+        end: { x: 450, y: y - 50 },
+        thickness: 0.5,
+        color: borderGray,
       });
+      page.drawText('Client Signature', { x: 50, y: y - 60, font: reg, size: 8, color: darkGray });
 
-      // Date signed box
+      // Date box
       page.drawRectangle({
-        x: 370, y: sigBoxY,
-        width: 150, height: 55,
-        color: c(247, 247, 247),
-        borderColor: c(180, 180, 180),
-        borderWidth: 0.5,
+        x: 490, y: y - 60, width: 65, height: 70,
+        color: c(255, 255, 255),
+        borderColor: borderGray,
+        borderWidth: 1,
       });
-      page.drawText('Date: _______________', { x: 380, y: sigBoxY + 28, font: reg, size: 8, color: dark });
+      page.drawText('Date', { x: 500, y: y - 65, font: reg, size: 8, color: darkGray });
 
-      // ── Footer ──
-      page.drawRectangle({ x: 0, y: 0, width, height: 40, color: c(248, 247, 245) });
-      page.drawText('© Noir & Ivory Imaging — All rights reserved', { x: 40, y: 15, font: reg, size: 7, color: halide });
-      page.drawText('noirandivoryimaging@outlook.com', { x: width - 250, y: 15, font: reg, size: 7, color: halide });
+      // ── FOOTER MESSAGE ──
+      y -= 120;
+      page.drawText('Thank you for choosing Noir & Ivory Imaging. We look forward to capturing your moments.', {
+        x: 40, y, font: reg, size: 9, color: darkGray,
+      });
+      y -= 15;
+      page.drawText('Contact us: noirandivoryimaging@outlook.com', { x: 40, y, font: reg, size: 9, color: darkGray });
+
+      // ── BOTTOM FOOTER ──
+      page.drawRectangle({ x: 0, y: 0, width, height: 35, color: c(248, 248, 248) });
+      page.drawText('© Noir & Ivory Imaging', { x: 40, y: 10, font: reg, size: 8, color: darkGray });
+      page.drawText('noirandivoryimaging@outlook.com', { x: width - 220, y: 10, font: reg, size: 8, color: darkGray });
 
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const fileName = `Invoice-${invoiceNum}-${(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
       const file = new File([blob], fileName, { type: 'application/pdf' });
 
-      // Pass file to parent for sending
       if (onGenerated) {
         onGenerated(file);
       }
 
-      // Also download to user's computer
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -197,7 +231,6 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
         </button>
       </div>
 
-      {/* File upload for reviewed invoice */}
       <div className="flex items-center gap-3">
         <input
           ref={fileInputRef}
