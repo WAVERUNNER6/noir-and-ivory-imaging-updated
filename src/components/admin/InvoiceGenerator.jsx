@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { toast } from 'sonner';
 
 // Default prices keyed by package name (normalized: trim + collapse spaces)
 const DEFAULT_PRICES = {
@@ -29,9 +30,11 @@ function c(r, g, b) {
 export default function InvoiceGenerator({ booking, onGenerated }) {
   const defaultPrice = getDefaultPrice(booking.package_request);
   const [amount, setAmount] = useState(defaultPrice);
-  const [editing, setEditing] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const generateInvoice = async () => {
+    setGenerating(true);
+    try {
     const description = booking.package_request || 'Photography Services';
     const invoiceNum = `NIV-${(booking.id?.slice(-6) || Date.now().toString().slice(-6)).toUpperCase()}`;
     const today = format(new Date(), 'MMMM d, yyyy');
@@ -231,6 +234,7 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
     const file = new File([blob], fileName, { type: 'application/pdf' });
     if (onGenerated) {
       onGenerated(file);
+      toast.success('Invoice ready to send');
     } else {
       // Fallback: download locally
       const url = URL.createObjectURL(blob);
@@ -239,6 +243,11 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
       a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
+    }
+    } catch (error) {
+      toast.error(`Failed to generate invoice: ${error.message}`);
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -257,9 +266,11 @@ export default function InvoiceGenerator({ booking, onGenerated }) {
       </div>
       <button
         onClick={generateInvoice}
-        className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors"
+        disabled={generating}
+        className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <FileText size={13} /> DOWNLOAD INVOICE
+        {generating ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
+        {generating ? 'GENERATING...' : 'DOWNLOAD INVOICE'}
       </button>
     </div>
   );
