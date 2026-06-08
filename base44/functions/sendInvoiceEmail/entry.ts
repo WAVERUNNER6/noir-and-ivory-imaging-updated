@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { booking, invoice_url } = await req.json();
+    const { booking, invoice_uri } = await req.json();
     if (!booking?.client_email) {
       return Response.json({ error: 'Missing client email' }, { status: 400 });
     }
@@ -31,13 +31,9 @@ Deno.serve(async (req) => {
 
     // Create signed URL for invoice download
     let invoiceLink = '';
-    if (invoice_url) {
-      try {
-        const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: invoice_url, expires_in: 2592000 });
-        invoiceLink = signed_url;
-      } catch {
-        invoiceLink = invoice_url;
-      }
+    if (invoice_uri) {
+      const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: invoice_uri, expires_in: 2592000 });
+      invoiceLink = signed_url;
     }
 
     const isRealEstate = booking.shoot_type === 'real_estate';

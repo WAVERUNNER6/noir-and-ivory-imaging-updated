@@ -26,7 +26,7 @@ function c(r, g, b) {
   return rgb(r / 255, g / 255, b / 255);
 }
 
-export default function InvoiceGenerator({ booking }) {
+export default function InvoiceGenerator({ booking, onGenerated }) {
   const defaultPrice = getDefaultPrice(booking.package_request);
   const [amount, setAmount] = useState(defaultPrice);
   const [editing, setEditing] = useState(false);
@@ -224,15 +224,22 @@ export default function InvoiceGenerator({ booking }) {
     const footerEmailW = reg.widthOfTextAtSize('noirandivoryimaging@outlook.com', 8);
     page.drawText('noirandivoryimaging@outlook.com', { x: width - 40 - footerEmailW, y: 18, font: reg, size: 8, color: halide });
 
-    // ── Download ──
+    // ── Return as file ──
     const pdfBytes = await pdfDoc.save();
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Invoice-${invoiceNum}-${(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const fileName = `Invoice-${invoiceNum}-${(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
+    const file = new File([blob], fileName, { type: 'application/pdf' });
+    if (onGenerated) {
+      onGenerated(file);
+    } else {
+      // Fallback: download locally
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   return (
