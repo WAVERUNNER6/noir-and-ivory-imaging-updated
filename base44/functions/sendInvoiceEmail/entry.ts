@@ -102,12 +102,16 @@ Deno.serve(async (req) => {
       </div>
     `;
 
+    const me = await graphRequest(accessToken, '/me?$select=mail,userPrincipalName');
+    const fromAddress = me.mail || me.userPrincipalName;
+
     await graphRequest(accessToken, '/me/sendMail', {
       method: 'POST',
       body: JSON.stringify({
         message: {
           subject: `Noir & Ivory Imaging — Invoice for Your ${shootTypeLabel} Session`,
           body: { contentType: 'HTML', content: htmlBody },
+          from: { emailAddress: { address: fromAddress } },
           toRecipients: [{ emailAddress: { address: booking.client_email } }],
           attachments,
         },

@@ -85,12 +85,16 @@ Deno.serve(async (req) => {
       </div>
     `;
 
+    const me = await graphRequest(accessToken, '/me?$select=mail,userPrincipalName');
+    const fromAddress = me.mail || me.userPrincipalName;
+
     await graphRequest(accessToken, '/me/sendMail', {
       method: 'POST',
       body: JSON.stringify({
         message: {
           subject: `⏳ New ${shootTypeLabel} Booking — ${booking.client_name}`,
           body: { contentType: 'HTML', content: htmlBody },
+          from: { emailAddress: { address: fromAddress } },
           toRecipients: [{ emailAddress: { address: 'studio@noirandivoryimaging.com' } }],
         },
         saveToSentItems: true,
