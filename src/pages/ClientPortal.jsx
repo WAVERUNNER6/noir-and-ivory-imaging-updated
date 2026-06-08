@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Loader2, Upload, Check, ChevronLeft, ChevronRight, X, FileText, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import SignaturePad from '@/components/portal/SignaturePad';
 
 const PHOTO_LIMITS = {
   'Business Events \u2014 Silver': 50,
@@ -18,20 +19,17 @@ function getPhotoLimit(pkg) {
 }
 
 function InvoiceStep({ booking, portalToken, onDone }) {
-  const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const inputRef = useRef();
 
-  const handleSubmit = async () => {
-    if (!file) return;
+  const handleSigned = async (signatureFile) => {
     setUploading(true);
-    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file: signatureFile });
     await base44.functions.invoke('clientPortalAction', {
       portal_token: portalToken,
       action: 'upload_signed_invoice',
       data: { file_uri },
     });
-    toast.success('Signed invoice uploaded. Your booking is now confirmed!');
+    toast.success('Signature submitted. Your booking is now confirmed!');
     onDone();
     setUploading(false);
   };
@@ -53,10 +51,10 @@ function InvoiceStep({ booking, portalToken, onDone }) {
     <div className="max-w-xl mx-auto">
       <h2 className="font-display text-ivory text-4xl mb-3">Review &amp; Sign Your Invoice</h2>
       <p className="font-body text-halide/70 mb-8 leading-relaxed">
-        Please review your invoice below, sign it, and upload your signed copy to confirm your booking.
+        Review your invoice below, then draw your signature to confirm your booking.
       </p>
 
-      {/* Step 1 — View / Download Invoice */}
+      {/* Step 1 — View Invoice */}
       <div className="mb-8">
         <p className="font-mono text-[9px] tracking-[0.25em] text-halide/50 mb-3">STEP 1 — REVIEW YOUR INVOICE</p>
         {booking.invoice_url ? (
@@ -74,7 +72,7 @@ function InvoiceStep({ booking, portalToken, onDone }) {
               rel="noopener noreferrer"
               className="flex items-center gap-2 border border-halide/30 text-halide px-4 py-2.5 font-mono text-[10px] tracking-widest hover:border-ivory hover:text-ivory transition-colors shrink-0"
             >
-              <Download size={12} /> VIEW / DOWNLOAD
+              <Download size={12} /> VIEW
             </a>
           </div>
         ) : (
@@ -84,31 +82,16 @@ function InvoiceStep({ booking, portalToken, onDone }) {
         )}
       </div>
 
-      {/* Step 2 — Upload Signed Copy */}
+      {/* Step 2 — Draw Signature */}
       <div>
-        <p className="font-mono text-[9px] tracking-[0.25em] text-halide/50 mb-3">STEP 2 — UPLOAD YOUR SIGNED COPY</p>
-        <div
-          onClick={() => inputRef.current?.click()}
-          className="border border-dashed border-halide/30 hover:border-halide/60 transition-colors p-10 text-center cursor-pointer mb-4"
-        >
-          <input ref={inputRef} type="file" accept="application/pdf,image/*" className="hidden"
-            onChange={e => setFile(e.target.files[0])} />
-          <Upload size={20} className="text-halide/40 mx-auto mb-3" />
-          {file ? (
-            <p className="font-mono text-[11px] text-ivory tracking-wider">{file.name}</p>
-          ) : (
-            <p className="font-mono text-[11px] text-halide/50 tracking-wider">CLICK TO UPLOAD SIGNED INVOICE</p>
-          )}
-          <p className="font-mono text-[9px] text-halide/30 tracking-widest mt-1">PDF OR IMAGE</p>
-        </div>
-        {file && (
-          <button
-            onClick={handleSubmit}
-            disabled={uploading}
-            className="w-full bg-ivory text-noir py-4 font-mono text-[11px] tracking-[0.2em] hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
-          >
-            {uploading ? <><Loader2 size={13} className="animate-spin" /> UPLOADING...</> : 'SUBMIT SIGNED INVOICE'}
-          </button>
+        <p className="font-mono text-[9px] tracking-[0.25em] text-halide/50 mb-3">STEP 2 — SIGN BELOW</p>
+        {uploading ? (
+          <div className="flex items-center justify-center gap-3 py-10 border border-halide/20">
+            <Loader2 size={16} className="animate-spin text-halide" />
+            <span className="font-mono text-[11px] text-halide tracking-widest">SUBMITTING...</span>
+          </div>
+        ) : (
+          <SignaturePad onSigned={handleSigned} />
         )}
       </div>
     </div>
