@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
-import { Check, X, Camera, Building2, Clock, ChevronDown, Paperclip, Send, Loader2, Upload, Image } from 'lucide-react';
+import { Check, X, Camera, Building2, Clock, ChevronDown, Paperclip, Send, Loader2, Upload, Image, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import InvoiceGenerator from '@/components/admin/InvoiceGenerator.jsx';
 import EditedPhotoUploader from '@/components/admin/EditedPhotoUploader.jsx';
+import GalleryViewer from '@/components/admin/GalleryViewer.jsx';
 
 const STATUS_CONFIG = {
   pending:          { label: 'PENDING',          bg: 'bg-halide/10',     text: 'text-halide',     border: 'border-halide/30' },
@@ -135,6 +136,7 @@ function BookingRow({ booking, onStatusChange }) {
   const [sendingInvoice, setSendingInvoice] = useState(false);
   const [localStatus, setLocalStatus] = useState(booking.status);
   const [editingGallery, setEditingGallery] = useState(null);
+  const [signedInvoiceUrl, setSignedInvoiceUrl] = useState(null);
   const invoiceInputRef = useRef();
 
   // Load gallery for editing step
@@ -143,6 +145,15 @@ function BookingRow({ booking, onStatusChange }) {
       base44.entities.Gallery.filter({ booking_id: booking.id }).then(gs => {
         if (gs.length) setEditingGallery(gs[0]);
       });
+    }
+  }, [localStatus, expanded]);
+
+  // Load signed invoice URL when confirmed and expanded
+  useEffect(() => {
+    if (localStatus === 'confirmed' && expanded && booking.signed_invoice_url && !signedInvoiceUrl) {
+      base44.integrations.Core.CreateFileSignedUrl({ file_uri: booking.signed_invoice_url, expires_in: 3600 })
+        .then(r => setSignedInvoiceUrl(r.signed_url))
+        .catch(() => {});
     }
   }, [localStatus, expanded]);
 
@@ -300,6 +311,12 @@ function BookingRow({ booking, onStatusChange }) {
                         {sendingInvoice ? 'SENDING...' : 'SEND TO CLIENT'}
                       </button>
                     )}
+                    {localStatus === 'confirmed' && signedInvoiceUrl && (
+                      <a href={signedInvoiceUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 border border-green-800/40 text-green-400 px-5 py-2.5 font-mono text-[11px] tracking-widest hover:bg-green-900/20 transition-colors">
+                        <Check size={12} /> VIEW SIGNED INVOICE
+                      </a>
+                    )}
                   </div>
                 </div>
               )}
@@ -316,6 +333,14 @@ function BookingRow({ booking, onStatusChange }) {
                       }
                     }}
                   />
+                  <GalleryViewer booking={{ ...booking, status: localStatus }} />
+                </div>
+              )}
+
+              {/* Gallery viewer for selecting_photos — see what was uploaded + what client picks */}
+              {(localStatus === 'selecting_photos' || localStatus === 'editing') && (
+                <div className="border-t border-halide/10 pt-4">
+                  <GalleryViewer booking={{ ...booking, status: localStatus }} />
                 </div>
               )}
 

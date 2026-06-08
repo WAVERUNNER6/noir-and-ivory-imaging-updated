@@ -23,7 +23,54 @@ function InvoiceStep({ booking, portalToken, onDone }) {
 
   const handleSigned = async (signatureFile) => {
     setUploading(true);
-    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file: signatureFile });
+
+    // If there's an original invoice PDF, embed the signature into it
+    let finalFile = signatureFile;
+    if (booking.invoice_url) {
+      try {
+        const { PDFDocument } = await import('pdf-lib');
+        const pdfRes = await fetch(booking.invoice_url);
+        const pdfBytes = await pdfRes.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+
+        // Convert signature PNG to array buffer
+        const sigBytes = await signatureFile.arrayBuffer();
+        const sigImage = await pdfDoc.embedPng(sigBytes);
+
+        const pages = pdfDoc.getPages();
+        const page = pages[0];
+        const { height } = page.getSize();
+
+        // Signature box coordinates matching InvoiceGenerator layout
+        const sigBoxX = 40;
+        const sigBoxY = height - 510;
+        const sigBoxW = 320;
+        const sigBoxH = 60;
+
+        // Draw date signed
+        const dateSigned = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const { StandardFonts } = await import('pdf-lib');
+        const reg = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        page.drawText(dateSigned, { x: 384, y: sigBoxY + 12, font: reg, size: 10, color: { type: 'RGB', red: 26/255, green: 26/255, blue: 26/255 } });
+
+        // Embed signature image into the signature box
+        page.drawImage(sigImage, {
+          x: sigBoxX + 8,
+          y: sigBoxY + 8,
+          width: sigBoxW - 16,
+          height: sigBoxH - 16,
+        });
+
+        const signedPdfBytes = await pdfDoc.save();
+        const blob = new Blob([signedPdfBytes], { type: 'application/pdf' });
+        finalFile = new File([blob], 'signed-invoice.pdf', { type: 'application/pdf' });
+      } catch (e) {
+        // If PDF embedding fails, fall back to just saving the signature image
+        console.warn('PDF embed failed, saving signature image instead', e);
+      }
+    }
+
+    const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file: finalFile });
     await base44.functions.invoke('clientPortalAction', {
       portal_token: portalToken,
       action: 'upload_signed_invoice',
