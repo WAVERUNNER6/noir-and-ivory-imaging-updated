@@ -31,7 +31,14 @@
       "items": {
         "type": "string"
       },
-      "description": "Array of private file URIs"
+      "description": "Array of private photo file URIs"
+    },
+    "videos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of private video file URIs"
     },
     "sent_at": {
       "type": "string",
