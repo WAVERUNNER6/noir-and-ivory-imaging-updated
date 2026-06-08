@@ -156,10 +156,16 @@ function BookingForm({ form, setForm, bookedSlots }) {
         </div>
       ))}
       <div>
-        <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">PACKAGE REQUEST</label>
+        <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">PACKAGE REQUEST *</label>
         <select
-          value={form.package_request || ''}
-          onChange={e => setForm({ ...form, package_request: e.target.value })}
+          value={form.package_request?.startsWith('Custom —') ? 'custom' : (form.package_request || '')}
+          onChange={e => {
+            if (e.target.value === 'custom') {
+              setForm({ ...form, package_request: 'Custom — ' });
+            } else {
+              setForm({ ...form, package_request: e.target.value });
+            }
+          }}
           className="w-full bg-noir border-b border-halide/30 pb-3 font-body text-ivory text-lg focus:outline-none focus:border-ivory transition-colors appearance-none cursor-pointer"
         >
           <option value="" disabled className="bg-noir text-halide">Select a package...</option>
@@ -175,7 +181,19 @@ function BookingForm({ form, setForm, bookedSlots }) {
           <optgroup label="Real Estate" className="bg-noir text-halide font-mono text-xs">
             <option value="Real Estate — Limited Time Special" className="bg-noir text-ivory">Limited Time Special — $350</option>
           </optgroup>
+          <optgroup label="Other" className="bg-noir text-halide font-mono text-xs">
+            <option value="custom" className="bg-noir text-ivory">Custom Project</option>
+          </optgroup>
         </select>
+        {form.package_request?.startsWith('Custom —') && (
+          <input
+            type="text"
+            value={form.package_request.replace('Custom — ', '')}
+            onChange={e => setForm({ ...form, package_request: `Custom — ${e.target.value}` })}
+            placeholder="Briefly describe your custom project..."
+            className="w-full mt-4 bg-transparent border-b border-halide/30 pb-3 font-body text-ivory text-lg focus:outline-none focus:border-ivory transition-colors placeholder:text-halide/30"
+          />
+        )}
       </div>
 
       {/* Time Range */}
@@ -271,7 +289,10 @@ export default function Booking() {
   const canProceed = () => {
     if (step === 0) return !!form.shoot_type;
     if (step === 1) return !!selectedDate;
-    if (step === 2) return !!(form.client_name && form.client_email && form.shoot_time && form.shoot_end_time && form.details.trim());
+    if (step === 2) {
+      const packageValid = !!(form.package_request && form.package_request !== 'Custom — ' && form.package_request.trim());
+      return !!(form.client_name && form.client_email && form.shoot_time && form.shoot_end_time && form.details.trim() && packageValid);
+    }
     return true;
   };
 
