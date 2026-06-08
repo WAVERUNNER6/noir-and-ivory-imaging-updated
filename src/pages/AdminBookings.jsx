@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { Check, X, Camera, Building2, Clock, ChevronDown, Paperclip, Send, Loader2, Upload, Image, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import InvoiceGenerator from '@/components/admin/InvoiceGenerator.jsx';
+import InvoiceLineItemModal from '@/components/admin/InvoiceLineItemModal.jsx';
 import EditedPhotoUploader from '@/components/admin/EditedPhotoUploader.jsx';
 import GalleryViewer from '@/components/admin/GalleryViewer.jsx';
 
@@ -137,6 +137,7 @@ function BookingRow({ booking, onStatusChange }) {
   const [localStatus, setLocalStatus] = useState(booking.status);
   const [editingGallery, setEditingGallery] = useState(null);
   const [signedInvoiceUrl, setSignedInvoiceUrl] = useState(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const invoiceInputRef = useRef();
 
   // Load gallery for editing step
@@ -297,7 +298,15 @@ function BookingRow({ booking, onStatusChange }) {
                 <div className="border-t border-halide/10 pt-4 mt-2 space-y-3">
                   <p className="font-mono text-[9px] tracking-widest text-halide/50">INVOICE</p>
                   <div className="flex flex-wrap items-center gap-3">
-                    <InvoiceGenerator booking={booking} />
+                    <button
+                      onClick={() => setShowInvoiceModal(true)}
+                      className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors"
+                    >
+                      <FileText size={13} /> DOWNLOAD INVOICE
+                    </button>
+                  {showInvoiceModal && (
+                    <InvoiceLineItemModal booking={booking} onClose={() => setShowInvoiceModal(false)} />
+                  )}
                     <input ref={invoiceInputRef} type="file" accept="application/pdf" className="hidden"
                       onChange={e => setInvoiceFile(e.target.files[0])} />
                     <button onClick={() => invoiceInputRef.current?.click()}
