@@ -100,8 +100,44 @@ function BookingCalendar({ selectedDate, onSelectDate }) {
   );
 }
 
-function BookingForm({ form, setForm, bookedSlots }) {
+function TimeSlotPicker({ label, value, onChange, bookedSlots, disabledAfter }) {
   const { pending = [], confirmed = [] } = bookedSlots;
+  return (
+    <div>
+      <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">{label}</label>
+      <div className="grid grid-cols-3 gap-2">
+        {TIME_SLOTS.map(time => {
+          const isConfirmed = confirmed.includes(time);
+          const isPending = pending.includes(time);
+          const isUnavailable = isConfirmed || isPending;
+          const isAfterLimit = disabledAfter && TIME_SLOTS.indexOf(time) <= TIME_SLOTS.indexOf(disabledAfter);
+          const isDisabled = isUnavailable || isAfterLimit;
+          const isSelected = value === time;
+          return (
+            <button key={time} type="button"
+              onClick={() => !isDisabled && onChange(time)}
+              disabled={isDisabled}
+              className={`py-2.5 font-mono text-[11px] tracking-wider border transition-all relative
+                ${isDisabled
+                  ? 'border-halide/10 text-halide/20 cursor-not-allowed'
+                  : isSelected
+                    ? 'border-ivory bg-ivory/10 text-ivory'
+                    : 'border-halide/20 text-halide hover:border-halide/50'}`}>
+              <span className={`relative inline-block ${isUnavailable ? 'opacity-40' : ''}`}>
+                {isUnavailable && <span className="absolute inset-x-0 top-1/2 h-[1px] bg-halide/40 -translate-y-1/2" />}
+                {time}
+              </span>
+              {isPending && !isAfterLimit && <span className="block text-[9px] tracking-wider mt-0.5 text-yellow-500/60">REQUESTED</span>}
+              {isConfirmed && !isAfterLimit && <span className="block text-[9px] tracking-wider mt-0.5 text-halide/30">RESERVED</span>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function BookingForm({ form, setForm, bookedSlots }) {
   return (
     <div className="space-y-6">
       {[
@@ -138,35 +174,34 @@ function BookingForm({ form, setForm, bookedSlots }) {
           </optgroup>
         </select>
       </div>
-      <div>
-        <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">PREFERRED TIME</label>
-        <div className="grid grid-cols-3 gap-2">
-          {TIME_SLOTS.map(time => {
-            const isConfirmed = confirmed.includes(time);
-            const isPending = pending.includes(time);
-            const isUnavailable = isConfirmed || isPending;
-            return (
-              <button key={time} type="button" onClick={() => !isUnavailable && setForm({ ...form, shoot_time: time })} disabled={isUnavailable}
-                className={`py-2.5 font-mono text-[11px] tracking-wider border transition-all relative
-                  ${isUnavailable
-                    ? 'border-halide/10 text-halide/30 cursor-not-allowed'
-                    : form.shoot_time === time
-                      ? 'border-ivory bg-ivory/10 text-ivory'
-                      : 'border-halide/20 text-halide hover:border-halide/50'}`}>
-                <span className={`relative inline-block ${isUnavailable ? 'opacity-40' : ''}`}>
-                  {isUnavailable && <span className="absolute inset-x-0 top-1/2 h-[1px] bg-halide/40 -translate-y-1/2" />}
-                  {time}
-                </span>
-                {isPending && <span className="block text-[9px] tracking-wider mt-0.5 text-yellow-500/60">REQUESTED</span>}
-                {isConfirmed && <span className="block text-[9px] tracking-wider mt-0.5 text-halide/30">RESERVED</span>}
-              </button>
-            );
-          })}
-        </div>
+
+      {/* Time Range */}
+      <div className="space-y-5">
+        <TimeSlotPicker
+          label="START TIME *"
+          value={form.shoot_time}
+          onChange={time => setForm({ ...form, shoot_time: time, shoot_end_time: '' })}
+          bookedSlots={bookedSlots}
+        />
+        {form.shoot_time && (
+          <TimeSlotPicker
+            label="END TIME *"
+            value={form.shoot_end_time}
+            onChange={time => setForm({ ...form, shoot_end_time: time })}
+            bookedSlots={bookedSlots}
+            disabledAfter={form.shoot_time}
+          />
+        )}
+        {form.shoot_time && form.shoot_end_time && (
+          <p className="font-mono text-[10px] text-ivory/40 tracking-widest">
+            SESSION: {form.shoot_time} — {form.shoot_end_time}
+          </p>
+        )}
       </div>
+
       <div>
-        <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">ADDITIONAL DETAILS</label>
-        <textarea rows={3} value={form.details} onChange={e => setForm({ ...form, details: e.target.value })} placeholder="Tell us about your project..."
+        <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">ADDITIONAL DETAILS *</label>
+        <textarea rows={4} value={form.details} onChange={e => setForm({ ...form, details: e.target.value })} placeholder="Tell us about your project, any special requirements, or questions..."
           className="w-full bg-transparent border-b border-halide/30 pb-3 font-body text-ivory text-lg focus:outline-none focus:border-ivory transition-colors resize-none placeholder:text-halide/30" />
       </div>
     </div>
@@ -197,7 +232,7 @@ export default function Booking() {
   const [form, setForm] = useState({
     client_name: '', client_email: '', client_phone: '',
     shoot_type: initialShootType,
-    shoot_time: '', location: '',
+    shoot_time: '', shoot_end_time: '', location: '',
     package_request: initialPackage,
     details: ''
   });
@@ -220,7 +255,7 @@ export default function Booking() {
   const canProceed = () => {
     if (step === 0) return !!form.shoot_type;
     if (step === 1) return !!selectedDate;
-    if (step === 2) return !!(form.client_name && form.client_email);
+    if (step === 2) return !!(form.client_name && form.client_email && form.shoot_time && form.shoot_end_time && form.details.trim());
     return true;
   };
 
@@ -247,7 +282,7 @@ export default function Booking() {
             <Check size={24} className="text-ivory" />
           </div>
           <h2 className="font-display text-ivory text-4xl md:text-5xl mb-4">Capture Initiated</h2>
-          <p className="font-body text-halide text-lg mb-2">{format(selectedDate, 'MMMM d, yyyy')}{form.shoot_time ? ` at ${form.shoot_time}` : ''}</p>
+          <p className="font-body text-halide text-lg mb-2">{format(selectedDate, 'MMMM d, yyyy')}{form.shoot_time ? ` · ${form.shoot_time}${form.shoot_end_time ? ` — ${form.shoot_end_time}` : ''}` : ''}</p>
           <p className="font-body text-halide/60 mb-10">We'll reach out within 24 hours to confirm your session details.</p>
           <a href="/" className="inline-flex items-center gap-3 font-mono text-xs tracking-widest text-halide border-b border-halide pb-1 hover:text-ivory hover:border-ivory transition-colors">
             RETURN HOME
@@ -314,7 +349,7 @@ export default function Booking() {
                     {[
                       ['SHOOT TYPE', form.shoot_type?.replace('_', ' ')],
                       ['DATE', selectedDate && format(selectedDate, 'MMMM d, yyyy')],
-                      ['TIME', form.shoot_time || 'Flexible'],
+                      ['TIME', form.shoot_time && form.shoot_end_time ? `${form.shoot_time} — ${form.shoot_end_time}` : (form.shoot_time || 'Flexible')],
                       ['LOCATION', form.location || 'TBD'],
                       ['PACKAGE', form.package_request || 'Not specified'],
                       ['NAME', form.client_name],
