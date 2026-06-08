@@ -38,22 +38,38 @@ function parseDateTime(dateStr, timeStr) {
 async function syncCalendarEvent(accessToken, booking, action) {
   const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate Photography' : 'Event Photography';
   const calendarSubject = `📷 ${shootTypeLabel} — ${booking.client_name}`;
+  const pendingSubject = `⏳ ${shootTypeLabel} — ${booking.client_name} (PENDING)`;
 
-  // Search for existing event by subject on that date
+  // Search for existing confirmed event (📷 prefix)
   const dateStr = booking.shoot_date;
-  const searchRes = await graphRequest(accessToken,
-    `/me/events?$filter=startsWith(subject,'📷 ${shootTypeLabel} — ${booking.client_name}')&$select=id,subject,start`
-  ).catch(() => null);
+  const [searchRes, pendingSearchRes] = await Promise.all([
+    graphRequest(accessToken,
+      `/me/events?$filter=startsWith(subject,'📷 ${shootTypeLabel} — ${booking.client_name}')&$select=id,subject,start`
+    ).catch(() => null),
+    graphRequest(accessToken,
+      `/me/events?$filter=startsWith(subject,'⏳ ${shootTypeLabel} — ${booking.client_name}')&$select=id,subject,start`
+    ).catch(() => null),
+  ]);
 
   const existingEvent = searchRes?.value?.find(e =>
     e.subject === calendarSubject && e.start?.dateTime?.startsWith(dateStr)
   );
+  const pendingEvent = pendingSearchRes?.value?.find(e =>
+    e.subject === pendingSubject && e.start?.dateTime?.startsWith(dateStr)
+  );
 
-  if (action === 'delete' || booking.status === 'cancelled') {
-    if (existingEvent) {
-      await graphRequest(accessToken, `/me/events/${existingEvent.id}`, { method: 'DELETE' }).catch(() => null);
-    }
+  if (action === 'delete' || booking.status === 'cancelled' || booking.status === 'completed') {
+    // Delete both the confirmed and pending calendar events
+    await Promise.all([
+      existingEvent ? graphRequest(accessToken, `/me/events/${existingEvent.id}`, { method: 'DELETE' }).catch(() => null) : null,
+      pendingEvent ? graphRequest(accessToken, `/me/events/${pendingEvent.id}`, { method: 'DELETE' }).catch(() => null) : null,
+    ]);
     return;
+  }
+
+  // Also clean up the pending event when status moves to confirmed
+  if (pendingEvent) {
+    await graphRequest(accessToken, `/me/events/${pendingEvent.id}`, { method: 'DELETE' }).catch(() => null);
   }
 
   const startDT = parseDateTime(dateStr, booking.shoot_time || '09:00 AM');
