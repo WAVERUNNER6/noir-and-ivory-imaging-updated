@@ -87,7 +87,7 @@ function BookingRow({ booking, onStatusChange }) {
                 {[
                   ['SHOOT TYPE', shootTypeLabel],
                   ['DATE', booking.shoot_date],
-                  ['TIME', booking.shoot_time || 'Flexible'],
+                  ['TIME', booking.shoot_time && booking.shoot_end_time ? `${booking.shoot_time} — ${booking.shoot_end_time}` : booking.shoot_time || 'Flexible'],
                   ['LOCATION', booking.location || 'TBD'],
                   ['PACKAGE', booking.package_request || 'Not specified'],
                   ['PHONE', booking.client_phone || '—'],
