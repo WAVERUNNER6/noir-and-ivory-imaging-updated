@@ -1,0 +1,64 @@
+{
+  "name": "Gallery",
+  "type": "object",
+  "properties": {
+    "booking_id": {
+      "type": "string",
+      "description": "Reference to the booking"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Client's name"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Client's email for access"
+    },
+    "shoot_date": {
+      "type": "string",
+      "description": "Date of the shoot"
+    },
+    "shoot_type": {
+      "type": "string",
+      "description": "Type of shoot"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "Unique secret token for client access"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of private file URIs"
+    },
+    "sent_at": {
+      "type": "string",
+      "description": "When the gallery link was last sent to the client"
+    }
+  },
+  "required": [
+    "booking_id",
+    "client_email",
+    "access_token"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

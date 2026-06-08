@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { Check, X, Camera, Building2, Clock, ChevronDown, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import GalleryUploader from '@/components/admin/GalleryUploader';
 
 const STATUS_CONFIG = {
   pending:   { label: 'PENDING',   bg: 'bg-halide/10',  text: 'text-halide',  border: 'border-halide/30' },
@@ -128,13 +129,20 @@ function BookingRow({ booking, onStatusChange }) {
                     </button>
                   </>
                 )}
-                {(booking.status === 'completed' || booking.status === 'cancelled') && (
+                {booking.status === 'cancelled' && (
                   <p className="font-mono text-[10px] text-halide/40 tracking-widest pt-2">
-                    {booking.status === 'completed' ? '✓ Session complete — client notified' : '✗ Cancelled — client notified'}
+                    ✗ Cancelled — client notified
                   </p>
                 )}
               </div>
             </div>
+
+              {/* Gallery uploader for completed bookings */}
+              {booking.status === 'completed' && (
+                <div className="border-t border-halide/10 pt-5 mt-2">
+                  <GalleryUploader booking={booking} />
+                </div>
+              )}
           </motion.div>
         )}
       </AnimatePresence>
