@@ -14,8 +14,9 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Booking from './pages/Booking';
 import Pricing from './pages/Pricing';
-import AdminBookings from './pages/AdminBookings';
+import AdminBookings from './pages/AdminBookings.jsx';
 import ClientGallery from './pages/ClientGallery';
+import ClientPortal from './pages/ClientPortal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/admin/bookings" element={<AdminBookings />} />
         <Route path="/gallery" element={<ClientGallery />} />
+        <Route path="/portal" element={<ClientPortal />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

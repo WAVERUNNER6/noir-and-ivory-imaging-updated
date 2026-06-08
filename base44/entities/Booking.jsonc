@@ -51,12 +51,23 @@
       "type": "string",
       "enum": [
         "pending",
+        "invoice_sent",
         "confirmed",
+        "selecting_photos",
+        "editing",
         "completed",
         "cancelled"
       ],
       "default": "pending",
       "description": "Current status of the booking"
+    },
+    "signed_invoice_url": {
+      "type": "string",
+      "description": "URL of the signed invoice uploaded by the client"
+    },
+    "portal_token": {
+      "type": "string",
+      "description": "Unique token for client portal access"
     }
   },
   "required": [

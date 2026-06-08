@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Type of shoot"
     },
+    "package_request": {
+      "type": "string",
+      "description": "Package selected \u2014 used to determine photo selection limit"
+    },
     "access_token": {
       "type": "string",
       "description": "Unique secret token for client access"
@@ -31,7 +35,14 @@
       "items": {
         "type": "string"
       },
-      "description": "Array of private photo file URIs"
+      "description": "Array of raw/unedited private photo file URIs"
+    },
+    "edited_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of final edited photo file URIs"
     },
     "videos": {
       "type": "array",
@@ -40,9 +51,29 @@
       },
       "description": "Array of private video file URIs"
     },
+    "selected_photos": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Indices of photos the client selected for editing"
+    },
+    "selection_submitted_at": {
+      "type": "string",
+      "description": "When the client submitted their photo selection"
+    },
     "sent_at": {
       "type": "string",
       "description": "When the gallery link was last sent to the client"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "raw",
+        "edited"
+      ],
+      "default": "raw",
+      "description": "raw = client selecting photos; edited = final delivery"
     }
   },
   "required": [
