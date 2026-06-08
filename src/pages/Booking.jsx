@@ -150,6 +150,9 @@ function BookingForm({ form, setForm, bookedSlots }) {
           <label className="font-mono text-[11px] text-halide tracking-widest block mb-3">{label}</label>
           <input type={type} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} placeholder={placeholder}
             className="w-full bg-transparent border-b border-halide/30 pb-3 font-body text-ivory text-lg focus:outline-none focus:border-ivory transition-colors placeholder:text-halide/30" />
+          {key === 'client_email' && (form.shoot_type === 'real_estate' || (form.shoot_type === 'event' && form.package_request?.startsWith('Business'))) && (
+            <p className="font-mono text-[10px] text-halide/60 tracking-wider mt-2">↑ YOUR FINISHED PHOTOS WILL BE DELIVERED TO THIS ADDRESS</p>
+          )}
         </div>
       ))}
       <div>

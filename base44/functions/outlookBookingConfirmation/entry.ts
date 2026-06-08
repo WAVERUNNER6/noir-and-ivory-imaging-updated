@@ -36,7 +36,11 @@ Deno.serve(async (req) => {
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
 
     const shootDate = booking.shoot_date;
-    const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate Photography' : 'Event Photography';
+    const isRealEstate = booking.shoot_type === 'real_estate';
+    const isPersonal = booking.shoot_type === 'event' && (booking.package_request || '').startsWith('Personal');
+    const shootTypeLabel = isRealEstate ? 'Real Estate Photography' : isPersonal ? 'Personal Event Photography' : 'Business Event Photography';
+    // Outlook calendar color categories: Red=real estate, Blue=business, Green=personal
+    const calendarCategory = isRealEstate ? 'Red Category' : isPersonal ? 'Green Category' : 'Blue Category';
 
     // 1. Create calendar event (pending)
     const startDT = parseDateTime(shootDate, booking.shoot_time || '09:00 AM');
@@ -48,6 +52,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       body: JSON.stringify({
         subject: `⏳ ${shootTypeLabel} — ${booking.client_name} (PENDING)`,
+        categories: [calendarCategory],
         body: {
           contentType: 'HTML',
           content: `

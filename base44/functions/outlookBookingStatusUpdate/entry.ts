@@ -36,7 +36,10 @@ function parseDateTime(dateStr, timeStr) {
 }
 
 async function syncCalendarEvent(accessToken, booking, action) {
-  const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate Photography' : 'Event Photography';
+  const isRealEstate = booking.shoot_type === 'real_estate';
+  const isPersonal = booking.shoot_type === 'event' && (booking.package_request || '').startsWith('Personal');
+  const shootTypeLabel = isRealEstate ? 'Real Estate Photography' : isPersonal ? 'Personal Event Photography' : 'Business Event Photography';
+  const calendarCategory = isRealEstate ? 'Red Category' : isPersonal ? 'Green Category' : 'Blue Category';
   const calendarSubject = `📷 ${shootTypeLabel} — ${booking.client_name}`;
   const dateStr = booking.shoot_date;
 
@@ -92,7 +95,7 @@ async function syncCalendarEvent(accessToken, booking, action) {
     start: { dateTime: startDT, timeZone: 'Pacific Standard Time' },
     end: { dateTime: endDT, timeZone: 'Pacific Standard Time' },
     location: { displayName: booking.location || 'TBD' },
-    categories: booking.status === 'confirmed' ? ['Green category'] : [],
+    categories: [calendarCategory],
   };
 
   if (existingEvent) {
@@ -128,7 +131,9 @@ Deno.serve(async (req) => {
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
 
     const statusInfo = STATUS_LABELS[booking.status] || { label: booking.status, color: '#8E8E8E', emoji: '📋' };
-    const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate Photography' : 'Event Photography';
+    const isRealEstate = booking.shoot_type === 'real_estate';
+    const isPersonal = booking.shoot_type === 'event' && (booking.package_request || '').startsWith('Personal');
+    const shootTypeLabel = isRealEstate ? 'Real Estate Photography' : isPersonal ? 'Personal Event Photography' : 'Business Event Photography';
     const isNew = event.type === 'create';
 
     // Only send client email when: new booking (pending) OR status confirmed/completed/cancelled
