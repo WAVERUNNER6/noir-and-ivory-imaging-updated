@@ -158,20 +158,31 @@ function BookingRow({ booking, onStatusChange }) {
   const handleSendInvoice = async () => {
     if (!invoiceFile) return;
     setSendingInvoice(true);
-    // Upload invoice publicly so client can view/download it in portal
-    const { file_url } = await base44.integrations.Core.UploadFile({ file: invoiceFile });
-    // Store invoice_url on booking so portal can display it
-    await base44.entities.Booking.update(booking.id, { invoice_url: file_url, status: 'invoice_sent' });
-    // Send invoice email first (with attachment), then portal link
-    const appUrl = window.location.origin;
-    const updatedBooking = { ...booking, invoice_url: file_url };
-    await base44.functions.invoke('sendInvoiceEmail', { booking: updatedBooking, invoice_url: file_url });
-    await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'invoice' });
-    toast.success(`Invoice sent to ${booking.client_email}`);
-    setInvoiceFile(null);
-    setLocalStatus('invoice_sent');
-    onStatusChange(booking.id, 'invoice_sent');
-    setSendingInvoice(false);
+    try {
+      // 1. Upload invoice publicly so client can view/download it in portal
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: invoiceFile });
+
+      // 2. Save to booking immediately — data is never lost even if emails fail
+      await base44.entities.Booking.update(booking.id, { invoice_url: file_url, status: 'invoice_sent' });
+      setInvoiceFile(null);
+      setLocalStatus('invoice_sent');
+      onStatusChange(booking.id, 'invoice_sent');
+
+      // 3. Send emails — if either fails, show a warning but don't block the UI
+      const appUrl = window.location.origin;
+      const updatedBooking = { ...booking, invoice_url: file_url };
+      try {
+        await base44.functions.invoke('sendInvoiceEmail', { booking: updatedBooking, invoice_url: file_url });
+        await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'invoice' });
+        toast.success(`Invoice uploaded and sent to ${booking.client_email}`);
+      } catch (emailErr) {
+        toast.warning(`Invoice saved, but email failed: ${emailErr.message}. The client can still access the portal.`);
+      }
+    } catch (err) {
+      toast.error(`Failed to upload invoice: ${err.message}`);
+    } finally {
+      setSendingInvoice(false);
+    }
   };
 
   const ShootIcon = booking.shoot_type === 'real_estate' ? Building2 : Camera;
