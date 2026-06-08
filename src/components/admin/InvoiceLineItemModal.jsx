@@ -146,17 +146,9 @@ async function generatePDF(booking, items, notes) {
   page.drawText('TOTAL DUE', { x: 360, y: totalBlockY + 10, font: bold, size: 9, color: ivory });
 
   const form = pdfDoc.getForm();
-  const totalField = form.createTextField('total_due');
-  totalField.setText(totalStr);
-  totalField.addToPage(page, {
-    x: 458, y: totalBlockY + 2,
-    width: 92, height: 22,
-    textColor: ivory,
-    backgroundColor: c(22, 22, 22),
-    borderWidth: 0,
-    font: bold,
-    fontSize: 11,
-  });
+  // Draw total as static text (not a form field) so color renders correctly
+  const totalW = bold.widthOfTextAtSize(totalStr, 11);
+  page.drawText(totalStr, { x: width - 52 - totalW, y: totalBlockY + 10, font: bold, size: 11, color: ivory });
 
   // ── Notes ──
   let notesEndY = totalBlockY - 14;
