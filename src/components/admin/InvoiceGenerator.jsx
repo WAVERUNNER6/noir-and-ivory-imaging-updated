@@ -138,6 +138,8 @@ export default function InvoiceGenerator({ booking }) {
     // ── Divider ──
     page.drawLine({ start: { x: 40, y: height - 316 }, end: { x: width - 40, y: height - 316 }, thickness: 0.5, color: lightGray });
 
+    const form = pdfDoc.getForm();
+
     // ── Total Due block ──
     page.drawRectangle({ x: 350, y: height - 348, width: 205, height: 28, color: noir });
     page.drawText('TOTAL DUE', { x: 360, y: height - 338, font: bold, size: 9, color: ivory });
@@ -192,7 +194,6 @@ export default function InvoiceGenerator({ booking }) {
     page.drawText('Client Signature', { x: sigBoxX, y: sigBoxY - 12, font: reg, size: 7, color: halide });
 
     // Date signed box
-    const form = pdfDoc.getForm();
     const dateSigField = form.createTextField('date_signed');
     dateSigField.addToPage(page, {
       x: 380, y: sigBoxY,
