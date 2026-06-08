@@ -177,13 +177,7 @@ Deno.serve(async (req) => {
               </table>
             </div>
             <div style="background: #f8f7f5; padding: 24px; margin-bottom: 32px;">
-              <p style="font-family: monospace; font-size: 10px; letter-spacing: 3px; color: #8E8E8E; margin: 0 0 16px 0; text-transform: uppercase;">Payment Methods Accepted</p>
-              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                <tr><td style="padding: 5px 0; color: #8E8E8E; width: 130px;">Zelle</td><td style="color: #1a1a1a;">noirandivoryimaging@outlook.com</td></tr>
-                <tr><td style="padding: 5px 0; color: #8E8E8E;">Venmo</td><td style="color: #1a1a1a;">@NoirAndIvoryImaging</td></tr>
-                <tr><td style="padding: 5px 0; color: #8E8E8E;">Cash</td><td style="color: #1a1a1a;">Accepted at time of shoot</td></tr>
-                <tr><td style="padding: 5px 0; color: #8E8E8E;">Check</td><td style="color: #1a1a1a;">Made payable to Noir & Ivory Imaging</td></tr>
-              </table>
+              <p style="font-size: 14px; color: #1a1a1a; line-height: 1.7; margin: 0 0 8px 0;">We accept payment via <strong>Zelle, Venmo, Cash, or Check</strong>. An invoice will be sent to you separately with full payment details.</p>
             </div>
             <p style="font-size: 14px; color: #8E8E8E; line-height: 1.6; margin: 0 0 8px 0;">Questions? Reply to this email or contact us directly.</p>
             <p style="font-size: 14px; color: #8E8E8E; margin: 0;">noirandivoryimaging@outlook.com</p>
