@@ -28,7 +28,7 @@ function BookingRow({ booking, onStatusChange }) {
   const [loading, setLoading] = useState(false);
   const [invoiceFile, setInvoiceFile] = useState(null);
   const [sendingInvoice, setSendingInvoice] = useState(false);
-  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const invoiceInputRef = useRef();
 
   const handleAction = async (newStatus) => {
     setLoading(true);
@@ -39,19 +39,12 @@ function BookingRow({ booking, onStatusChange }) {
   };
 
   const handleSendInvoice = async () => {
-    if (!invoiceFile) {
-      toast.error('Generate invoice first');
-      return;
-    }
+    if (!invoiceFile) return;
     setSendingInvoice(true);
-    try {
-      const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file: invoiceFile });
-      await base44.functions.invoke('sendInvoiceEmail', { booking, invoice_uri: file_uri });
-      toast.success(`Invoice sent to ${booking.client_email}`);
-      setInvoiceFile(null);
-    } catch (error) {
-      toast.error(`Failed to send invoice: ${error.message}`);
-    }
+    const { file_url } = await base44.integrations.Core.UploadFile({ file: invoiceFile });
+    await base44.functions.invoke('sendInvoiceEmail', { booking, invoice_url: file_url });
+    toast.success(`Invoice sent to ${booking.client_email}`);
+    setInvoiceFile(null);
     setSendingInvoice(false);
   };
 
@@ -94,7 +87,7 @@ function BookingRow({ booking, onStatusChange }) {
                 {[
                   ['SHOOT TYPE', shootTypeLabel],
                   ['DATE', booking.shoot_date],
-                  ['TIME', booking.shoot_time && booking.shoot_end_time ? `${booking.shoot_time} — ${booking.shoot_end_time}` : booking.shoot_time || 'Flexible'],
+                  ['TIME', booking.shoot_time || 'Flexible'],
                   ['LOCATION', booking.location || 'TBD'],
                   ['PACKAGE', booking.package_request || 'Not specified'],
                   ['PHONE', booking.client_phone || '—'],
@@ -162,10 +155,15 @@ function BookingRow({ booking, onStatusChange }) {
                 <div className="border-t border-halide/10 pt-4 mt-2 space-y-3">
                   <p className="font-mono text-[9px] tracking-widest text-halide/50">INVOICE</p>
                   <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <InvoiceGenerator booking={booking} onGenerated={(file) => { setInvoiceFile(file); toast.success('Invoice generated'); }} />
-                      {invoiceFile && <Check size={13} className="text-green-400" />}
-                    </div>
+                    <InvoiceGenerator booking={booking} />
+                    <input ref={invoiceInputRef} type="file" accept="application/pdf" className="hidden"
+                      onChange={e => setInvoiceFile(e.target.files[0])} />
+                    <button
+                      onClick={() => invoiceInputRef.current?.click()}
+                      className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors"
+                    >
+                      <Paperclip size={13} /> {invoiceFile ? invoiceFile.name : 'ATTACH INVOICE'}
+                    </button>
                     {invoiceFile && (
                       <button
                         onClick={handleSendInvoice}

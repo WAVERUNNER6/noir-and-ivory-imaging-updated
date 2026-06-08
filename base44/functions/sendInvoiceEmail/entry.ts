@@ -22,22 +22,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { booking, invoice_uri } = await req.json();
+    const { booking, invoice_url } = await req.json();
     if (!booking?.client_email) {
       return Response.json({ error: 'Missing client email' }, { status: 400 });
     }
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
 
-    // Create signed URL for invoice download
-    let invoiceLink = '';
-    if (invoice_uri) {
-      try {
-        const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: invoice_uri, expires_in: 2592000 });
-        invoiceLink = signed_url;
-      } catch (e) {
-        console.error('Failed to create signed URL:', e.message);
-      }
+    // Fetch the invoice file and convert to base64
+    let attachments = [];
+    if (invoice_url) {
+      const fileRes = await fetch(invoice_url);
+      const buffer = await fileRes.arrayBuffer();
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const fileName = `Invoice-${booking.client_name?.replace(/\s+/g, '-') || 'Client'}.pdf`;
+      attachments = [{
+        '@odata.type': '#microsoft.graph.fileAttachment',
+        name: fileName,
+        contentType: 'application/pdf',
+        contentBytes: base64,
+      }];
     }
 
     const isRealEstate = booking.shoot_type === 'real_estate';
@@ -56,10 +60,9 @@ Deno.serve(async (req) => {
             Please find your invoice attached for your upcoming <strong>${shootTypeLabel}</strong> session on <strong>${booking.shoot_date}</strong>.
           </p>
           <div style="background: #f8f7f5; padding: 24px; margin-bottom: 28px;">
-            <p style="font-size: 14px; color: #1a1a1a; line-height: 1.7; margin: 0 0 12px 0;">
+            <p style="font-size: 14px; color: #1a1a1a; line-height: 1.7; margin: 0 0 8px 0;">
               We accept payment via <strong>Zelle, Venmo, Cash, or Check</strong>. Please don't hesitate to reach out with any questions.
             </p>
-            ${invoiceLink ? `<p style="font-size: 14px; margin: 12px 0 0 0;"><a href="${invoiceLink}" style="color: #0A0A0A; text-decoration: underline; font-weight: 500;">Download Invoice</a></p>` : ''}
           </div>
           <p style="font-size: 14px; color: #8E8E8E; margin: 0;">noirandivoryimaging@outlook.com</p>
         </div>
@@ -76,6 +79,7 @@ Deno.serve(async (req) => {
           subject: `Noir & Ivory Imaging — Invoice for Your ${shootTypeLabel} Session`,
           body: { contentType: 'HTML', content: htmlBody },
           toRecipients: [{ emailAddress: { address: booking.client_email } }],
+          attachments,
         },
         saveToSentItems: true,
       }),

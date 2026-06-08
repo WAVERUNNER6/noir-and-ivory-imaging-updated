@@ -29,19 +29,11 @@
     },
     "shoot_time": {
       "type": "string",
-      "description": "Preferred start time for the shoot"
-    },
-    "shoot_end_time": {
-      "type": "string",
-      "description": "Preferred end time for the shoot"
+      "description": "Preferred time for the shoot"
     },
     "location": {
       "type": "string",
       "description": "Location/venue for the shoot"
-    },
-    "package_request": {
-      "type": "string",
-      "description": "Requested photography package"
     },
     "details": {
       "type": "string",
