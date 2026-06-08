@@ -29,20 +29,15 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');
 
-    // Lock the invoice PDF (signature-only) and fetch it
-    let attachments = [];
+    // Create signed URL for invoice download
+    let invoiceLink = '';
     if (invoice_url) {
-      // Call the lock function to make it signature-only
-      const lockRes = await base44.asServiceRole.functions.invoke('lockInvoiceForSignature', { file_url: invoice_url });
-      const base64 = lockRes.data; // function returns base64 directly
-
-      const fileName = `Invoice-${booking.client_name?.replace(/\s+/g, '-') || 'Client'}.pdf`;
-      attachments = [{
-        '@odata.type': '#microsoft.graph.fileAttachment',
-        name: fileName,
-        contentType: 'application/pdf',
-        contentBytes: base64,
-      }];
+      try {
+        const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: invoice_url, expires_in: 2592000 });
+        invoiceLink = signed_url;
+      } catch {
+        invoiceLink = invoice_url;
+      }
     }
 
     const isRealEstate = booking.shoot_type === 'real_estate';
@@ -61,9 +56,10 @@ Deno.serve(async (req) => {
             Please find your invoice attached for your upcoming <strong>${shootTypeLabel}</strong> session on <strong>${booking.shoot_date}</strong>.
           </p>
           <div style="background: #f8f7f5; padding: 24px; margin-bottom: 28px;">
-            <p style="font-size: 14px; color: #1a1a1a; line-height: 1.7; margin: 0 0 8px 0;">
+            <p style="font-size: 14px; color: #1a1a1a; line-height: 1.7; margin: 0 0 12px 0;">
               We accept payment via <strong>Zelle, Venmo, Cash, or Check</strong>. Please don't hesitate to reach out with any questions.
             </p>
+            ${invoiceLink ? `<p style="font-size: 14px; margin: 12px 0 0 0;"><a href="${invoiceLink}" style="color: #0A0A0A; text-decoration: underline; font-weight: 500;">Download Invoice</a></p>` : ''}
           </div>
           <p style="font-size: 14px; color: #8E8E8E; margin: 0;">noirandivoryimaging@outlook.com</p>
         </div>
@@ -80,7 +76,6 @@ Deno.serve(async (req) => {
           subject: `Noir & Ivory Imaging — Invoice for Your ${shootTypeLabel} Session`,
           body: { contentType: 'HTML', content: htmlBody },
           toRecipients: [{ emailAddress: { address: booking.client_email } }],
-          attachments,
         },
         saveToSentItems: true,
       }),
