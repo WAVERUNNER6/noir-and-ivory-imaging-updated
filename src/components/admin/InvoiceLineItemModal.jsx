@@ -32,6 +32,17 @@ function calcTotal(items) {
   return sum;
 }
 
+function sanitize(str) {
+  if (!str) return '';
+  // Replace characters outside Latin-1 range that pdf-lib standard fonts don't support
+  return str
+    .replace(/\u2014/g, '-')   // em dash -> hyphen
+    .replace(/\u2013/g, '-')   // en dash -> hyphen
+    .replace(/\u2018|\u2019/g, "'") // smart quotes
+    .replace(/\u201c|\u201d/g, '"') // smart double quotes
+    .replace(/[^\x00-\xFF]/g, '?'); // anything else outside Latin-1
+}
+
 async function generatePDF(booking, items, notes) {
   const invoiceNum = `NIV-${(booking.id?.slice(-6) || Date.now().toString().slice(-6)).toUpperCase()}`;
   const today = format(new Date(), 'MMMM d, yyyy');
@@ -71,19 +82,19 @@ async function generatePDF(booking, items, notes) {
 
   // ── Bill To ──
   page.drawText('BILL TO', { x: 40, y: height - 162, font: bold, size: 8, color: halide });
-  page.drawText(booking.client_name || '\u2014', { x: 40, y: height - 180, font: bold, size: 14, color: dark });
-  page.drawText(booking.client_email || '', { x: 40, y: height - 197, font: reg, size: 10, color: mid });
+  page.drawText(sanitize(booking.client_name) || '-', { x: 40, y: height - 180, font: bold, size: 14, color: dark });
+  page.drawText(sanitize(booking.client_email) || '', { x: 40, y: height - 197, font: reg, size: 10, color: mid });
   if (booking.client_phone) {
-    page.drawText(booking.client_phone, { x: 40, y: height - 212, font: reg, size: 10, color: mid });
+    page.drawText(sanitize(booking.client_phone), { x: 40, y: height - 212, font: reg, size: 10, color: mid });
   }
 
   // ── Session Details ──
   const sX = 330;
   page.drawText('SESSION DETAILS', { x: sX, y: height - 162, font: bold, size: 8, color: halide });
   const sessionRows = [
-    ['Date',     booking.shoot_date || 'TBD'],
-    ['Time',     booking.shoot_time ? `${booking.shoot_time}${booking.shoot_end_time ? ` \u2014 ${booking.shoot_end_time}` : ''}` : 'TBD'],
-    ['Location', booking.location || 'TBD'],
+    ['Date',     sanitize(booking.shoot_date) || 'TBD'],
+    ['Time',     booking.shoot_time ? sanitize(`${booking.shoot_time}${booking.shoot_end_time ? ` - ${booking.shoot_end_time}` : ''}`) : 'TBD'],
+    ['Location', sanitize(booking.location) || 'TBD'],
   ];
   sessionRows.forEach(([label, val], i) => {
     const y = height - 180 - i * 18;
@@ -111,11 +122,11 @@ async function generatePDF(booking, items, notes) {
   items.forEach((item, idx) => {
     if (rowY < CONTENT_FLOOR) return; // stop before signature section
 
-    page.drawText(item.service || 'Service', { x: 52, y: rowY, font: reg, size: 10, color: dark });
+    page.drawText(sanitize(item.service) || 'Service', { x: 52, y: rowY, font: reg, size: 10, color: dark });
 
     // Wrap description — track actual height used
     const maxDescW = 200;
-    const words = (item.description || '').split(' ');
+    const words = sanitize(item.description || '').split(' ');
     let line = '';
     let descY = rowY;
     words.forEach(word => {
@@ -159,7 +170,7 @@ async function generatePDF(booking, items, notes) {
   let notesEndY = totalBlockY - 14;
   if (notes && notes.trim()) {
     page.drawText('NOTES', { x: 40, y: totalBlockY - 2, font: bold, size: 8, color: halide });
-    page.drawText(notes.trim(), { x: 40, y: totalBlockY - 18, font: reg, size: 9, color: mid });
+    page.drawText(sanitize(notes.trim()), { x: 40, y: totalBlockY - 18, font: reg, size: 9, color: mid });
     notesEndY = totalBlockY - 36;
   }
 
@@ -167,7 +178,7 @@ async function generatePDF(booking, items, notes) {
   const pkg = booking.package_request || '';
   const isPersonalPkg = pkg.startsWith('Personal');
   const isCustomPkg = pkg.startsWith('Custom');
-  const paymentMethods = (isPersonalPkg || isCustomPkg) ? 'Zelle  \u00b7  Venmo  \u00b7  Cash' : 'Zelle  \u00b7  Venmo  \u00b7  Cash  \u00b7  Check';
+  const paymentMethods = (isPersonalPkg || isCustomPkg) ? 'Zelle / Venmo / Cash' : 'Zelle / Venmo / Cash / Check';
   page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y: notesEndY - 10, font: bold, size: 9, color: dark });
   page.drawText(paymentMethods, { x: 40, y: notesEndY - 26, font: reg, size: 9, color: mid });
 
@@ -242,10 +253,9 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
     setGenerating(true);
     try {
       await generatePDF(booking, items, notes);
-      onClose();
     } catch (err) {
       console.error('PDF generation failed:', err);
-      toast.error(`PDF generation failed: ${err.message}`);
+      toast.error(`PDF generation failed: ${err.message || String(err)}`);
     } finally {
       setGenerating(false);
     }
