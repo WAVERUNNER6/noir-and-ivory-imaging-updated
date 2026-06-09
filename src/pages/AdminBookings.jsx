@@ -171,6 +171,23 @@ function RawPhotoUploader({ booking, onUploaded }) {
         </div>
       )}
 
+      {!allWatermarked && gallery?.photos?.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-[10px] text-halide/60">WATERMARKING PROGRESS</p>
+            <p className="font-mono text-[10px] text-halide/60">
+              {gallery.watermarked_photos?.length || 0} / {gallery.photos.length}
+            </p>
+          </div>
+          <div className="w-full h-2 bg-halide/10 border border-halide/20">
+            <div 
+              className="h-full bg-purple-500/60 transition-all"
+              style={{ width: `${((gallery.watermarked_photos?.length || 0) / gallery.photos.length) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <button
         onClick={handleSendSelectionLink}
         disabled={sending || !allWatermarked}
@@ -196,11 +213,10 @@ function BookingRow({ booking, onStatusChange }) {
 
   // Load gallery for editing step & watermark tracking
   useEffect(() => {
-    if (expanded) {
+    if (expanded && localStatus === 'editing') {
       base44.entities.Gallery.filter({ booking_id: booking.id }).then(gs => {
         if (gs.length) {
-          setGallery(gs[0]);
-          if (localStatus === 'editing') setEditingGallery(gs[0]);
+          setEditingGallery(gs[0]);
         }
       });
     }
