@@ -3,6 +3,7 @@ import { X, Plus, Trash2, FileText, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { toast } from 'sonner';
 
 const PACKAGE_DEFAULTS = {
   'Business Events \u2014 Silver':           [{ service: 'Photography Services', description: 'Business Event / Silver Package (Up to 3 hours)', price: '850' }],
@@ -242,9 +243,15 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
 
   const handleGenerate = async () => {
     setGenerating(true);
-    await generatePDF(booking, items, notes);
-    setGenerating(false);
-    onClose();
+    try {
+      await generatePDF(booking, items, notes);
+      onClose();
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      toast.error(`PDF generation failed: ${err.message}`);
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
