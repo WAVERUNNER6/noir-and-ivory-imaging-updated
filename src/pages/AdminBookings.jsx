@@ -125,6 +125,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
     newUris.forEach(uri => {
       base44.functions.invoke('addWatermark', { file_uri: uri })
         .then(async (res) => {
+          console.log('✅ Watermark response:', res.data);
           if (res.data?.watermarked_uri) {
             const galleries = await base44.entities.Gallery.filter({ booking_id: booking.id });
             if (galleries[0]) {
@@ -135,7 +136,9 @@ function RawPhotoUploader({ booking, onUploaded }) {
             }
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error('❌ Watermark error:', err);
+        });
     });
     toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
     setUploading(false);
