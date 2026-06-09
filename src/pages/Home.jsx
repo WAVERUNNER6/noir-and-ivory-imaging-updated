@@ -107,9 +107,14 @@ function AboutTeaser() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-6">
-            {[['500+', 'EVENTS CAPTURED'], ['200+', 'PROPERTIES SHOT'], ['8', 'YEARS EXPERIENCE'], ['100%', 'CLIENT SATISFACTION']].map(([num, label]) => (
+            {[
+              ['Light', 'THE MEDIUM WE MASTER'],
+              ['Shadow', 'WHERE DEPTH IS BORN'],
+              ['Contrast', 'THE LANGUAGE WE SPEAK'],
+              ['Beauty', 'WHAT WE REVEAL'],
+            ].map(([word, label]) => (
               <div key={label} className="text-center py-8 border border-noir/10">
-                <p className="font-display text-5xl text-noir">{num}</p>
+                <p className="font-display text-4xl text-noir italic">{word}</p>
                 <p className="font-mono text-[10px] text-halide tracking-widest mt-2">{label}</p>
               </div>
             ))}
