@@ -281,23 +281,21 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
 
   const total = calcTotal(items);
 
-  const handleGenerate = async () => {
-    console.log('🔵 BUTTON CLICKED');
-    console.log('Items:', items);
-    console.log('Generating state:', generating);
+  const handleGeneratePDF = async (e) => {
+    e.preventDefault();
+    if (generating || items.length === 0) return;
+    
     setGenerating(true);
     try {
-      console.log('🔵 About to call generatePDF');
       await generatePDF(booking, items, notes);
+      toast.success('PDF generated and downloaded');
     } catch (err) {
-      console.error('PDF generation failed:', err);
-      toast.error(`PDF generation failed: ${err.message || String(err)}`);
+      console.error('PDF error:', err);
+      toast.error(`Failed: ${err.message}`);
     } finally {
       setGenerating(false);
     }
   };
-
-  console.log('Modal rendered. Items:', items.length, 'Generating:', generating, 'Button disabled:', generating || items.length === 0);
 
   return (
     <AnimatePresence>
@@ -404,8 +402,9 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
               </span>
             </div>
             <button
-              onClick={handleGenerate}
+              onClick={handleGeneratePDF}
               disabled={generating || items.length === 0}
+              type="button"
               className="flex items-center gap-2 bg-ivory text-noir px-6 py-3 font-mono text-[11px] tracking-widest hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40"
             >
               {generating ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
