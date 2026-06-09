@@ -282,8 +282,12 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
   const total = calcTotal(items);
 
   const handleGenerate = async () => {
+    console.log('🔵 BUTTON CLICKED');
+    console.log('Items:', items);
+    console.log('Generating state:', generating);
     setGenerating(true);
     try {
+      console.log('🔵 About to call generatePDF');
       await generatePDF(booking, items, notes);
     } catch (err) {
       console.error('PDF generation failed:', err);
