@@ -35,6 +35,24 @@ async function uploadBatch(files) {
   );
 }
 
+function PhotoPreviewThumbnail({ fileUri }) {
+  const [signedUrl, setSignedUrl] = useState(null);
+
+  useEffect(() => {
+    base44.integrations.Core.CreateFileSignedUrl({ file_uri: fileUri, expires_in: 3600 })
+      .then(r => setSignedUrl(r.signed_url))
+      .catch(() => {});
+  }, [fileUri]);
+
+  return signedUrl ? (
+    <img src={signedUrl} alt="preview" className="w-full aspect-square object-cover border border-halide/20" />
+  ) : (
+    <div className="w-full aspect-square bg-halide/10 border border-halide/20 flex items-center justify-center">
+      <Loader2 size={12} className="animate-spin text-halide/30" />
+    </div>
+  );
+}
+
 function RawPhotoUploader({ booking, onUploaded }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
@@ -141,6 +159,18 @@ function RawPhotoUploader({ booking, onUploaded }) {
           </div>
         )}
       </div>
+
+      {gallery?.photos?.length > 0 && (
+        <div className="border border-halide/10 p-4 space-y-3">
+          <p className="font-mono text-[9px] tracking-widest text-halide/50">{gallery.photos.length} PHOTOS UPLOADED</p>
+          <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+            {gallery.photos.map((photoUri, idx) => (
+              <PhotoPreviewThumbnail key={idx} fileUri={photoUri} />
+            ))}
+          </div>
+        </div>
+      )}
+
       <button
         onClick={handleSendSelectionLink}
         disabled={sending || !allWatermarked}
