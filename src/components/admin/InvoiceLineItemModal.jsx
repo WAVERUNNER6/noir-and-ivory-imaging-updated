@@ -281,17 +281,29 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
 
   const total = calcTotal(items);
 
-  const handleGeneratePDF = async (e) => {
-    e.preventDefault();
-    if (generating || items.length === 0) return;
+  const handleGeneratePDF = async () => {
+    console.log('🔵 PDF generation started');
+    if (generating) {
+      console.log('⚠️ Already generating');
+      return;
+    }
+    if (items.length === 0) {
+      console.log('⚠️ No items');
+      toast.error('Add at least one line item');
+      return;
+    }
     
+    console.log('✅ Generating PDF...');
     setGenerating(true);
+    
     try {
+      console.log('📄 Calling generatePDF with:', { booking: booking.client_name, items: items.length, notes: notes.length });
       await generatePDF(booking, items, notes);
-      toast.success('PDF generated and downloaded');
+      console.log('✅ PDF generation complete');
+      toast.success('PDF downloaded successfully');
     } catch (err) {
-      console.error('PDF error:', err);
-      toast.error(`Failed: ${err.message}`);
+      console.error('❌ PDF generation error:', err);
+      toast.error(`PDF error: ${err.message || 'Unknown error'}`);
     } finally {
       setGenerating(false);
     }
@@ -402,7 +414,10 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
               </span>
             </div>
             <button
-              onClick={handleGeneratePDF}
+              onClick={() => {
+                console.log('🔵 Button clicked, state:', { generating, itemsLength: items.length });
+                handleGeneratePDF();
+              }}
               disabled={generating || items.length === 0}
               type="button"
               className="flex items-center gap-2 bg-ivory text-noir px-6 py-3 font-mono text-[11px] tracking-widest hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40"
