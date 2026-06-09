@@ -35,7 +35,7 @@ async function uploadBatch(files) {
   );
 }
 
-function PhotoPreviewThumbnail({ fileUri }) {
+function PhotoPreviewThumbnail({ fileUri, onDelete }) {
   const [signedUrl, setSignedUrl] = useState(null);
 
   useEffect(() => {
@@ -44,11 +44,23 @@ function PhotoPreviewThumbnail({ fileUri }) {
       .catch(() => {});
   }, [fileUri]);
 
-  return signedUrl ? (
-    <img src={signedUrl} alt="preview" className="w-full aspect-square object-cover border border-halide/20" />
-  ) : (
-    <div className="w-full aspect-square bg-halide/10 border border-halide/20 flex items-center justify-center">
-      <Loader2 size={12} className="animate-spin text-halide/30" />
+  return (
+    <div className="relative group">
+      {signedUrl ? (
+        <img src={signedUrl} alt="preview" className="w-full aspect-square object-cover border border-halide/20" />
+      ) : (
+        <div className="w-full aspect-square bg-halide/10 border border-halide/20 flex items-center justify-center">
+          <Loader2 size={12} className="animate-spin text-halide/30" />
+        </div>
+      )}
+      {onDelete && (
+        <button
+          onClick={onDelete}
+          className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 hover:bg-red-600 text-white rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <X size={12} />
+        </button>
+      )}
     </div>
   );
 }
@@ -165,7 +177,16 @@ function RawPhotoUploader({ booking, onUploaded }) {
           <p className="font-mono text-[9px] tracking-widest text-halide/50">{gallery.photos.length} PHOTOS UPLOADED</p>
           <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
             {gallery.photos.map((photoUri, idx) => (
-              <PhotoPreviewThumbnail key={idx} fileUri={photoUri} />
+              <PhotoPreviewThumbnail 
+                key={idx} 
+                fileUri={photoUri}
+                onDelete={async () => {
+                  const updated = gallery.photos.filter((_, i) => i !== idx);
+                  await base44.entities.Gallery.update(gallery.id, { photos: updated });
+                  setGallery(prev => prev ? { ...prev, photos: updated } : null);
+                  toast.success('Photo removed');
+                }}
+              />
             ))}
           </div>
         </div>
