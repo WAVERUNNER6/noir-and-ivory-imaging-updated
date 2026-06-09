@@ -17,10 +17,11 @@ Deno.serve(async (req) => {
     }
 
     // Get signed URL for the original image
-    const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({
+    const signedUrlResponse = await base44.integrations.Core.CreateFileSignedUrl({
       file_uri,
       expires_in: 3600
     });
+    const signed_url = signedUrlResponse.signed_url;
 
     // Use LLM to add watermark overlay
     const watermarked = await base44.integrations.Core.GenerateImage({
