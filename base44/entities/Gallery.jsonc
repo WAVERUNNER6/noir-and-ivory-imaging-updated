@@ -37,6 +37,13 @@
       },
       "description": "Array of raw/unedited private photo file URIs"
     },
+    "watermarked_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of watermarked photo file URIs"
+    },
     "edited_photos": {
       "type": "array",
       "items": {

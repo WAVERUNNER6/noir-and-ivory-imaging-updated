@@ -39,7 +39,12 @@ function RawPhotoUploader({ booking, onUploaded }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [sending, setSending] = useState(false);
+  const [gallery, setGallery] = useState(null);
   const fileInputRef = useRef();
+
+  const allWatermarked = gallery && gallery.photos && gallery.watermarked_photos 
+    ? gallery.photos.length === gallery.watermarked_photos.length 
+    : false;
 
   const handleFiles = async (files) => {
     const fileArray = Array.from(files);
@@ -76,11 +81,24 @@ function RawPhotoUploader({ booking, onUploaded }) {
     }
 
     const updated = [...(gallery.photos || []), ...newUris];
-    await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
+    await base44.entities.Gallery.update(gallery.id, { photos: updated, watermarked_photos: [], phase: 'raw' });
+    setGallery(prev => prev ? { ...prev, watermarked_photos: [] } : null);
     
     // Watermark asynchronously in background
     newUris.forEach(uri => {
-      base44.functions.invoke('addWatermark', { file_uri: uri }).catch(() => {});
+      base44.functions.invoke('addWatermark', { file_uri: uri })
+        .then(async (res) => {
+          if (res.data?.watermarked_uri) {
+            const galleries = await base44.entities.Gallery.filter({ booking_id: booking.id });
+            if (galleries[0]) {
+              const g = galleries[0];
+              const watermarked = [...(g.watermarked_photos || []), res.data.watermarked_uri];
+              await base44.entities.Gallery.update(g.id, { watermarked_photos: watermarked });
+              setGallery(g => g ? { ...g, watermarked_photos: watermarked } : null);
+            }
+          }
+        })
+        .catch(() => {});
     });
     toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
     setUploading(false);
@@ -125,11 +143,11 @@ function RawPhotoUploader({ booking, onUploaded }) {
       </div>
       <button
         onClick={handleSendSelectionLink}
-        disabled={sending}
+        disabled={sending || !allWatermarked}
         className="flex items-center gap-2 bg-purple-900/30 border border-purple-800/40 text-purple-300 px-5 py-2.5 font-mono text-[11px] tracking-widest hover:bg-purple-900/50 transition-colors disabled:opacity-40"
       >
         {sending ? <Loader2 size={12} className="animate-spin" /> : <Image size={12} />}
-        {sending ? 'SENDING...' : 'SEND PHOTO SELECTION LINK'}
+        {sending ? 'SENDING...' : !allWatermarked && gallery?.photos?.length > 0 ? `WATERMARKING (${gallery.watermarked_photos?.length || 0}/${gallery.photos.length})` : 'SEND PHOTO SELECTION LINK'}
       </button>
     </div>
   );
@@ -146,11 +164,14 @@ function BookingRow({ booking, onStatusChange }) {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const invoiceInputRef = useRef();
 
-  // Load gallery for editing step
+  // Load gallery for editing step & watermark tracking
   useEffect(() => {
-    if (localStatus === 'editing' && expanded) {
+    if (expanded) {
       base44.entities.Gallery.filter({ booking_id: booking.id }).then(gs => {
-        if (gs.length) setEditingGallery(gs[0]);
+        if (gs.length) {
+          setGallery(gs[0]);
+          if (localStatus === 'editing') setEditingGallery(gs[0]);
+        }
       });
     }
   }, [localStatus, expanded]);
