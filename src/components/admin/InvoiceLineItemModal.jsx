@@ -43,6 +43,8 @@ async function generatePDF(booking, items, notes) {
 
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const reg  = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const timesReg  = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+  const timesBold = await pdfDoc.embedFont(StandardFonts.TimesBold);
 
   const noir      = c(10, 10, 10);
   const ivory     = c(249, 247, 245);
@@ -54,8 +56,8 @@ async function generatePDF(booking, items, notes) {
 
   // ── Header ──
   page.drawRectangle({ x: 0, y: height - 120, width, height: 120, color: noir });
-  page.drawText('NOIR & IVORY IMAGING', { x: 40, y: height - 36, font: bold, size: 10, color: ivory });
-  page.drawText('INVOICE', { x: 40, y: height - 74, font: bold, size: 28, color: ivory });
+  page.drawText('NOIR & IVORY IMAGING', { x: 40, y: height - 36, font: timesReg, size: 11, color: ivory });
+  page.drawText('INVOICE', { x: 40, y: height - 74, font: timesBold, size: 28, color: ivory });
 
   const invNoText = `Invoice No: ${invoiceNum}`;
   page.drawText(invNoText, { x: width - 40 - reg.widthOfTextAtSize(invNoText, 9), y: height - 36, font: reg, size: 9, color: ivory });
@@ -203,7 +205,7 @@ async function generatePDF(booking, items, notes) {
   // ── Footer ──
   page.drawRectangle({ x: 0, y: 0, width, height: 44, color: offWhite });
   page.drawText('\u00a9 Noir & Ivory Imaging', { x: 40, y: 18, font: reg, size: 8, color: halide });
-  page.drawText('noirandivoryimaging@outlook.com', { x: width - 40 - reg.widthOfTextAtSize('noirandivoryimaging@outlook.com', 8), y: 18, font: reg, size: 8, color: halide });
+  page.drawText('studio@noirandivoryimaging.com', { x: width - 40 - reg.widthOfTextAtSize('studio@noirandivoryimaging.com', 8), y: 18, font: reg, size: 8, color: halide });
 
   const pdfBytes = await pdfDoc.save();
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });

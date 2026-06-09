@@ -62,6 +62,7 @@ function InvoiceStep({ booking, portalToken, onDone }) {
           height: sigBoxH - 16,
         });
 
+        pdfDoc.getForm().flatten();
         const signedPdfBytes = await pdfDoc.save();
         const blob = new Blob([signedPdfBytes], { type: 'application/pdf' });
         finalFile = new File([blob], 'signed-invoice.pdf', { type: 'application/pdf' });
