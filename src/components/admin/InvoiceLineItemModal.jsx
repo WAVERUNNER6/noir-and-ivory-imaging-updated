@@ -44,12 +44,15 @@ function sanitize(str) {
 }
 
 async function generatePDF(booking, items, notes) {
+  console.log('🔵 Starting PDF generation...');
   const invoiceNum = `NIV-${(booking.id?.slice(-6) || Date.now().toString().slice(-6)).toUpperCase()}`;
   const today = format(new Date(), 'MMMM d, yyyy');
   const total = calcTotal(items);
   const totalStr = total > 0 ? formatPrice(total) : 'TBD';
 
+  console.log('🔵 Creating PDF document...');
   const pdfDoc = await PDFDocument.create();
+  console.log('✅ PDF document created');
   const page = pdfDoc.addPage([595, 842]);
   const { width, height } = page.getSize();
 
@@ -226,16 +229,33 @@ async function generatePDF(booking, items, notes) {
   page.drawText('(c) Noir & Ivory Imaging', { x: 40, y: 18, font: reg, size: 8, color: halide });
   page.drawText('studio@noirandivoryimaging.com', { x: width - 40 - reg.widthOfTextAtSize('studio@noirandivoryimaging.com', 8), y: 18, font: reg, size: 8, color: halide });
 
+  console.log('🔵 Saving PDF...');
   const pdfBytes = await pdfDoc.save();
+  console.log('✅ PDF saved, bytes:', pdfBytes.length);
+  
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  console.log('✅ Blob created, size:', blob.size);
+  
   const url = URL.createObjectURL(blob);
+  console.log('✅ Object URL created:', url);
+  
+  const filename = `Invoice-${invoiceNum}-${sanitize(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
+  console.log('🔵 Triggering download with filename:', filename);
+  
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Invoice-${invoiceNum}-${sanitize(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
+  a.download = filename;
+  a.style.display = 'none';
   document.body.appendChild(a);
+  console.log('🔵 Anchor appended to body, clicking...');
   a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  console.log('✅ Click triggered');
+  
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    console.log('✅ Cleanup done');
+  }, 100);
 }
 
 export default function InvoiceLineItemModal({ booking, onClose }) {
