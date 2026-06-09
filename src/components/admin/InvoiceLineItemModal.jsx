@@ -297,6 +297,8 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
     }
   };
 
+  console.log('Modal rendered. Items:', items.length, 'Generating:', generating, 'Button disabled:', generating || items.length === 0);
+
   return (
     <AnimatePresence>
       <motion.div
