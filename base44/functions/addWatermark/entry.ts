@@ -34,11 +34,11 @@ Deno.serve(async (req) => {
     }
     const imageBuffer = await imageResponse.arrayBuffer();
 
-    // Use the LLM with vision to apply watermark (fallback but simpler)
+    // Use the LLM with vision to apply watermark
     console.log('🔵 Generating watermarked image...');
     const watermarked = await base44.asServiceRole.integrations.Core.GenerateImage({
       prompt: 'Add a subtle diagonal watermark text "Noir & Ivory Imaging" in white with 30% opacity across the center of this image. Keep original quality.',
-      file_urls: [file_uri]
+      file_urls: [signedUrl.signed_url]
     });
 
     // Fetch generated watermarked image
