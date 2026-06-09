@@ -127,13 +127,15 @@ function RawPhotoUploader({ booking, onUploaded }) {
         .then(async (res) => {
           console.log('✅ Watermark response:', res.data);
           if (res.data?.watermarked_uri) {
-            const galleries = await base44.entities.Gallery.filter({ booking_id: booking.id });
-            if (galleries[0]) {
-              const g = galleries[0];
-              const watermarked = [...(g.watermarked_photos || []), res.data.watermarked_uri];
-              await base44.entities.Gallery.update(g.id, { watermarked_photos: watermarked });
-              setGallery(g => g ? { ...g, watermarked_photos: watermarked } : null);
-            }
+            setGallery(prev => {
+              if (!prev) return null;
+              const watermarked = [...(prev.watermarked_photos || []), res.data.watermarked_uri];
+              // Update database in background
+              base44.entities.Gallery.update(prev.id, { watermarked_photos: watermarked }).catch(err => {
+                console.error('Failed to update gallery:', err);
+              });
+              return { ...prev, watermarked_photos: watermarked };
+            });
           }
         })
         .catch((err) => {
