@@ -71,18 +71,17 @@ function RawPhotoUploader({ booking, onUploaded }) {
     for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
       const batch = fileArray.slice(i, i + BATCH_SIZE);
       const results = await uploadBatch(batch);
-      
-      // Add watermark to each uploaded photo
-      for (const { uri } of results) {
-        const watermarked = await base44.functions.invoke('addWatermark', { file_uri: uri });
-        newUris.push(watermarked.watermarked_uri);
-      }
-      
+      results.forEach(({ uri }) => newUris.push(uri));
       setProgress({ done: Math.min(i + BATCH_SIZE, fileArray.length), total: fileArray.length });
     }
 
     const updated = [...(gallery.photos || []), ...newUris];
     await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
+    
+    // Watermark asynchronously in background
+    newUris.forEach(uri => {
+      base44.functions.invoke('addWatermark', { file_uri: uri }).catch(() => {});
+    });
     toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
     setUploading(false);
     onUploaded && onUploaded(gallery.id, updated.length);
