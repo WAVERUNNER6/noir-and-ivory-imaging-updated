@@ -300,7 +300,10 @@ function BookingRow({ booking, onStatusChange }) {
                   <p className="font-mono text-[9px] tracking-widest text-halide/50">INVOICE</p>
                   <div className="flex flex-wrap items-center gap-3">
                     <button
-                      onClick={() => setShowInvoiceModal(true)}
+                      onClick={() => {
+                        console.log('🔵 BUTTON CLICKED - opening modal');
+                        setShowInvoiceModal(true);
+                      }}
                       className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors"
                     >
                       <FileText size={13} /> DOWNLOAD INVOICE
