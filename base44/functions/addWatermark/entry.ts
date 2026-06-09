@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     });
 
     // Use LLM to add watermark overlay
-    const watermarked = await base44.asServiceRole.integrations.Core.GenerateImage({
+    const watermarked = await base44.integrations.Core.GenerateImage({
       prompt: `Take this image and add a subtle diagonal watermark text that says "Noir & Ivory Imaging" in white with 40% opacity across the center. Keep the original image quality and composition intact.`,
       existing_image_urls: [signed_url]
     });
