@@ -79,9 +79,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
     });
   }, [booking.id]);
 
-  const allWatermarked = gallery && gallery.photos && gallery.watermarked_photos 
-    ? gallery.photos.length === gallery.watermarked_photos.length 
-    : false;
+
 
   const handleFiles = async (files) => {
     const fileArray = Array.from(files);
@@ -118,30 +116,8 @@ function RawPhotoUploader({ booking, onUploaded }) {
     }
 
     const updated = [...(gallery.photos || []), ...newUris];
-    await base44.entities.Gallery.update(gallery.id, { photos: updated, watermarked_photos: [], phase: 'raw' });
-    setGallery(prev => prev ? { ...prev, watermarked_photos: [] } : null);
-    
-    // Watermark asynchronously in background
-    newUris.forEach(uri => {
-      base44.functions.invoke('addWatermark', { file_uri: uri })
-        .then(async (res) => {
-          console.log('✅ Watermark response:', res.data);
-          if (res.data?.watermarked_uri) {
-            setGallery(prev => {
-              if (!prev) return null;
-              const watermarked = [...(prev.watermarked_photos || []), res.data.watermarked_uri];
-              // Update database in background
-              base44.entities.Gallery.update(prev.id, { watermarked_photos: watermarked }).catch(err => {
-                console.error('Failed to update gallery:', err);
-              });
-              return { ...prev, watermarked_photos: watermarked };
-            });
-          }
-        })
-        .catch((err) => {
-          console.error('❌ Watermark error:', err);
-        });
-    });
+    await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
+    setGallery(prev => prev ? { ...prev, photos: updated } : null);
     toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
     setUploading(false);
     onUploaded && onUploaded(gallery.id, updated.length);
@@ -204,30 +180,15 @@ function RawPhotoUploader({ booking, onUploaded }) {
         </div>
       )}
 
-      {!allWatermarked && gallery?.photos?.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] text-halide/60">WATERMARKING PROGRESS</p>
-            <p className="font-mono text-[10px] text-halide/60">
-              {gallery.watermarked_photos?.length || 0} / {gallery.photos.length}
-            </p>
-          </div>
-          <div className="w-full h-2 bg-halide/10 border border-halide/20">
-            <div 
-              className="h-full bg-purple-500/60 transition-all"
-              style={{ width: `${((gallery.watermarked_photos?.length || 0) / gallery.photos.length) * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
+
 
       <button
         onClick={handleSendSelectionLink}
-        disabled={sending || !allWatermarked}
+        disabled={sending || !gallery?.photos?.length}
         className="flex items-center gap-2 bg-purple-900/30 border border-purple-800/40 text-purple-300 px-5 py-2.5 font-mono text-[11px] tracking-widest hover:bg-purple-900/50 transition-colors disabled:opacity-40"
       >
         {sending ? <Loader2 size={12} className="animate-spin" /> : <Image size={12} />}
-        {sending ? 'SENDING...' : !allWatermarked && gallery?.photos?.length > 0 ? `WATERMARKING (${gallery.watermarked_photos?.length || 0}/${gallery.photos.length})` : 'SEND PHOTO SELECTION LINK'}
+        {sending ? 'SENDING...' : 'SEND PHOTO SELECTION LINK'}
       </button>
     </div>
   );
