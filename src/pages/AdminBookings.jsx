@@ -72,6 +72,13 @@ function RawPhotoUploader({ booking, onUploaded }) {
   const [gallery, setGallery] = useState(null);
   const fileInputRef = useRef();
 
+  // Load gallery on mount
+  useEffect(() => {
+    base44.entities.Gallery.filter({ booking_id: booking.id }).then(gs => {
+      if (gs.length) setGallery(gs[0]);
+    });
+  }, [booking.id]);
+
   const allWatermarked = gallery && gallery.photos && gallery.watermarked_photos 
     ? gallery.photos.length === gallery.watermarked_photos.length 
     : false;
