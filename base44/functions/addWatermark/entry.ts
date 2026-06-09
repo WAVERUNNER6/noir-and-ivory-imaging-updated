@@ -18,24 +18,11 @@ Deno.serve(async (req) => {
 
     console.log('🔵 Starting watermark for:', file_uri);
 
-    // Call gallerySignedUrls function to get signed URL
-    console.log('🔵 Fetching signed URL via backend function...');
-    const signedUrlsResult = await base44.asServiceRole.functions.invoke('gallerySignedUrls', {
-      file_uris: [file_uri]
-    });
-    
-    if (!signedUrlsResult.data || !signedUrlsResult.data[0]) {
-      throw new Error('Failed to get signed URL');
-    }
-    
-    const signed_url = signedUrlsResult.data[0];
-    console.log('✅ Got signed URL');
-
+    // Generate watermarked image directly from URI
     console.log('🔵 Generating watermarked image...');
-    // Use LLM to add watermark overlay
     const watermarked = await base44.integrations.Core.GenerateImage({
       prompt: `Take this image and add a subtle diagonal watermark text that says "Noir & Ivory Imaging" in white with 40% opacity across the center. Keep the original image quality and composition intact.`,
-      existing_image_urls: [signed_url]
+      existing_image_urls: [file_uri]
     });
     console.log('✅ Generated watermarked image:', watermarked.url);
 
