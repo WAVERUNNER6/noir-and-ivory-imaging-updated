@@ -18,48 +18,40 @@ Deno.serve(async (req) => {
 
     console.log('🔵 Starting watermark for:', file_uri);
 
-    // Get signed URL to fetch the image
-    console.log('🔵 Getting signed URL...');
-    const fullFileUri = file_uri.startsWith('private://') ? file_uri : `private://${file_uri}`;
-    const signedUrl = await base44.integrations.Core.CreateFileSignedUrl({
-      file_uri: fullFileUri,
+    // Ensure proper format
+    console.log('🔵 Creating signed URL...');
+    const fileUri = !file_uri.includes('private://') ? `private://${file_uri}` : file_uri;
+    const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({
+      file_uri: fileUri,
       expires_in: 3600
     });
+    console.log('✅ Got signed URL');
 
-    // Fetch the image
-    console.log('🔵 Fetching image...');
-    const imageResponse = await fetch(signedUrl.signed_url);
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
-    }
-    const imageBuffer = await imageResponse.arrayBuffer();
-
-    // Use the LLM with vision to apply watermark
-    console.log('🔵 Generating watermarked image...');
-    const watermarked = await base44.asServiceRole.integrations.Core.GenerateImage({
-      prompt: 'Add a subtle diagonal watermark text "Noir & Ivory Imaging" in white with 30% opacity across the center of this image. Keep original quality.',
-      file_urls: [signedUrl.signed_url]
+    // Generate watermarked image using LLM with vision
+    console.log('🔵 Applying watermark...');
+    const watermarked = await base44.integrations.Core.GenerateImage({
+      prompt: 'Add a subtle diagonal watermark text "Noir & Ivory Imaging" in white with 30% opacity across the center of this image. Keep original quality and format.',
+      file_urls: [signed_url]
     });
+    console.log('✅ Watermark generated:', watermarked.url);
 
-    // Fetch generated watermarked image
+    // Download watermarked image and upload to private storage
+    console.log('🔵 Downloading watermarked image...');
     const watermarkedResponse = await fetch(watermarked.url);
     if (!watermarkedResponse.ok) {
-      throw new Error('Failed to fetch watermarked image');
+      throw new Error(`Failed to download watermarked image: ${watermarkedResponse.statusText}`);
     }
     const watermarkedBuffer = await watermarkedResponse.arrayBuffer();
 
-    // Upload the watermarked result
-    console.log('🔵 Uploading watermarked file...');
+    console.log('🔵 Uploading watermarked file to storage...');
     const watermarkedFile = new File(
       [watermarkedBuffer],
       'watermarked.jpg',
       { type: 'image/jpeg' }
     );
-
-    const uploadResponse = await base44.integrations.Core.UploadPrivateFile({
+    const { file_uri: watermarked_uri } = await base44.integrations.Core.UploadPrivateFile({
       file: watermarkedFile
     });
-    const watermarked_uri = uploadResponse.file_uri;
     console.log('✅ Uploaded watermarked file:', watermarked_uri);
 
     return Response.json({
