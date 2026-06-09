@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     }
 
     // Get signed URL for the original image
-    const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
+    const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({
       file_uri,
       expires_in: 3600
     });
