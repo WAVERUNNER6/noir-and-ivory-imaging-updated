@@ -59,7 +59,7 @@ async function generatePDF(booking, items, notes) {
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const reg  = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const timesReg  = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-  const timesBold = await pdfDoc.embedFont(StandardFonts.TimesBold);
+  const timesBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
 
   const noir      = c(10, 10, 10);
   const ivory     = c(249, 247, 245);
