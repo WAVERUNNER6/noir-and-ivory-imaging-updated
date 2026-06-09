@@ -414,12 +414,8 @@ export default function InvoiceLineItemModal({ booking, onClose }) {
               </span>
             </div>
             <button
-              onClick={() => {
-                console.log('🔵 Button clicked, state:', { generating, itemsLength: items.length });
-                handleGeneratePDF();
-              }}
+              onClick={handleGeneratePDF}
               disabled={generating || items.length === 0}
-              type="button"
               className="flex items-center gap-2 bg-ivory text-noir px-6 py-3 font-mono text-[11px] tracking-widest hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40"
             >
               {generating ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
