@@ -71,7 +71,13 @@ function RawPhotoUploader({ booking, onUploaded }) {
     for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
       const batch = fileArray.slice(i, i + BATCH_SIZE);
       const results = await uploadBatch(batch);
-      results.forEach(({ uri }) => newUris.push(uri));
+      
+      // Add watermark to each uploaded photo
+      for (const { uri } of results) {
+        const watermarked = await base44.functions.invoke('addWatermark', { file_uri: uri });
+        newUris.push(watermarked.watermarked_uri);
+      }
+      
       setProgress({ done: Math.min(i + BATCH_SIZE, fileArray.length), total: fileArray.length });
     }
 
