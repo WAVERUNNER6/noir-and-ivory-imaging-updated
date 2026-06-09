@@ -100,9 +100,16 @@ async function generatePDF(booking, items, notes) {
     const y = height - 180 - i * 18;
     page.drawText(`${label}:`, { x: sX, y, font: bold, size: 9, color: halide });
     const maxW = width - 40 - (sX + 58);
-    const safeVal = reg.widthOfTextAtSize(val, 9) > maxW
-      ? val.substring(0, Math.floor(val.length * maxW / reg.widthOfTextAtSize(val, 9))) + '...'
-      : val;
+    let safeVal = val;
+    try {
+      const valWidth = reg.widthOfTextAtSize(val, 9);
+      if (valWidth > maxW) {
+        const charWidth = valWidth / val.length;
+        safeVal = val.substring(0, Math.max(1, Math.floor(maxW / charWidth))) + '...';
+      }
+    } catch (e) {
+      safeVal = 'N/A';
+    }
     page.drawText(safeVal, { x: sX + 58, y, font: reg, size: 9, color: dark });
   });
 
@@ -129,17 +136,22 @@ async function generatePDF(booking, items, notes) {
     const words = sanitize(item.description || '').split(' ');
     let line = '';
     let descY = rowY;
-    words.forEach(word => {
-      const test = line ? `${line} ${word}` : word;
-      if (reg.widthOfTextAtSize(test, 10) > maxDescW) {
-        page.drawText(line, { x: 180, y: descY, font: reg, size: 10, color: dark });
-        line = word;
-        descY -= 14;
-      } else {
-        line = test;
-      }
-    });
-    if (line) page.drawText(line, { x: 180, y: descY, font: reg, size: 10, color: dark });
+    try {
+      words.forEach(word => {
+        const test = line ? `${line} ${word}` : word;
+        const testWidth = reg.widthOfTextAtSize(test, 10);
+        if (testWidth > maxDescW) {
+          if (line) page.drawText(line, { x: 180, y: descY, font: reg, size: 10, color: dark });
+          line = word;
+          descY -= 14;
+        } else {
+          line = test;
+        }
+      });
+      if (line) page.drawText(line, { x: 180, y: descY, font: reg, size: 10, color: dark });
+    } catch (e) {
+      page.drawText(sanitize(item.description || 'N/A').substring(0, 30) + '...', { x: 180, y: descY, font: reg, size: 10, color: dark });
+    }
 
     const priceStr = formatPrice(item.price);
     page.drawText(priceStr, { x: width - 52 - bold.widthOfTextAtSize(priceStr, 11), y: rowY, font: bold, size: 11, color: dark });
@@ -211,7 +223,7 @@ async function generatePDF(booking, items, notes) {
 
   // ── Footer ──
   page.drawRectangle({ x: 0, y: 0, width, height: 44, color: offWhite });
-  page.drawText('\u00a9 Noir & Ivory Imaging', { x: 40, y: 18, font: reg, size: 8, color: halide });
+  page.drawText('(c) Noir & Ivory Imaging', { x: 40, y: 18, font: reg, size: 8, color: halide });
   page.drawText('studio@noirandivoryimaging.com', { x: width - 40 - reg.widthOfTextAtSize('studio@noirandivoryimaging.com', 8), y: 18, font: reg, size: 8, color: halide });
 
   const pdfBytes = await pdfDoc.save();
@@ -219,11 +231,11 @@ async function generatePDF(booking, items, notes) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Invoice-${invoiceNum}-${(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
+  a.download = `Invoice-${invoiceNum}-${sanitize(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  URL.revokeObjectURL(url);
 }
 
 export default function InvoiceLineItemModal({ booking, onClose }) {
