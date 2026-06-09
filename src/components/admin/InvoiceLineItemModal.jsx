@@ -152,8 +152,6 @@ async function generatePDF(booking, items, notes) {
   page.drawRectangle({ x: 350, y: totalBlockY, width: 205, height: 28, color: noir });
   page.drawText('TOTAL DUE', { x: 360, y: totalBlockY + 10, font: bold, size: 9, color: ivory });
 
-  const form = pdfDoc.getForm();
-  // Draw total as static text (not a form field) so color renders correctly
   const totalW = bold.widthOfTextAtSize(totalStr, 11);
   page.drawText(totalStr, { x: width - 52 - totalW, y: totalBlockY + 10, font: bold, size: 11, color: ivory });
 
@@ -173,10 +171,7 @@ async function generatePDF(booking, items, notes) {
   page.drawText('PAYMENT METHODS ACCEPTED', { x: 40, y: notesEndY - 10, font: bold, size: 9, color: dark });
   page.drawText(paymentMethods, { x: 40, y: notesEndY - 26, font: reg, size: 9, color: mid });
 
-  // ── Studio authorization (off-page, hidden) ──
-  const studioSigField = form.createTextField('studio_authorization');
-  studioSigField.setText(`Authorized by Noir & Ivory Imaging — ${today}`);
-  studioSigField.addToPage(page, { x: 0, y: -50, width: 1, height: 1 });
+
 
   // ── Client Signature — anchored to bottom of page, always in a fixed position ──
   // Footer is 44px; thank-you note is ~48px; sig box + labels ~90px; header ~60px = ~242 from bottom
@@ -193,8 +188,8 @@ async function generatePDF(booking, items, notes) {
   page.drawLine({ start: { x: 54, y: sigBoxY + 14 }, end: { x: 346, y: sigBoxY + 14 }, thickness: 0.5, color: c(180,180,180) });
   page.drawText('Client Signature', { x: 40, y: sigBoxY - 12, font: reg, size: 7, color: halide });
 
-  const dateSigField = form.createTextField('date_signed');
-  dateSigField.addToPage(page, { x: 380, y: sigBoxY, width: 155, height: 34 });
+  // Date field as a drawn box (no interactive form field)
+  page.drawRectangle({ x: 380, y: sigBoxY, width: 155, height: 34, color: c(247,247,247), borderColor: c(180,180,180), borderWidth: 0.5 });
   page.drawText('Date', { x: 380, y: sigBoxY - 12, font: reg, size: 7, color: halide });
 
   // ── Thank you note ──
