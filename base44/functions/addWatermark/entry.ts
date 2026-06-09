@@ -20,8 +20,9 @@ Deno.serve(async (req) => {
 
     // Get signed URL to fetch the image
     console.log('🔵 Getting signed URL...');
+    const fullFileUri = file_uri.startsWith('private://') ? file_uri : `private://${file_uri}`;
     const signedUrl = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
-      file_uri,
+      file_uri: fullFileUri,
       expires_in: 3600
     });
 
