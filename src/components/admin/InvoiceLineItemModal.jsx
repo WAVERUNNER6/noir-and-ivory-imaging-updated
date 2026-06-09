@@ -189,7 +189,7 @@ async function generatePDF(booking, items, notes) {
 
   const sigBoxY = sigSectionY - 100;
   page.drawRectangle({ x: 40, y: sigBoxY, width: 320, height: 60, color: c(250,250,250), borderColor: c(160,160,160), borderWidth: 0.75 });
-  page.drawText('Draw Signature Here', { x: 54, y: sigBoxY + 26, font: reg, size: 10, color: c(200,200,200), opacity: 0.6 });
+  page.drawText('Draw Signature Here', { x: 54, y: sigBoxY + 26, font: reg, size: 10, color: c(200,200,200) });
   page.drawLine({ start: { x: 54, y: sigBoxY + 14 }, end: { x: 346, y: sigBoxY + 14 }, thickness: 0.5, color: c(180,180,180) });
   page.drawText('Client Signature', { x: 40, y: sigBoxY - 12, font: reg, size: 7, color: halide });
 
@@ -214,8 +214,10 @@ async function generatePDF(booking, items, notes) {
   const a = document.createElement('a');
   a.href = url;
   a.download = `Invoice-${invoiceNum}-${(booking.client_name || 'Client').replace(/\s+/g, '-')}.pdf`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export default function InvoiceLineItemModal({ booking, onClose }) {
