@@ -18,23 +18,18 @@ Deno.serve(async (req) => {
 
     console.log('🔵 Starting watermark for:', file_uri);
 
-    // Get signed URL for the original image
-    let signedUrlResponse;
-    try {
-      signedUrlResponse = await base44.integrations.Core.CreateFileSignedUrl({
-        file_uri,
-        expires_in: 3600
-      });
-      console.log('✅ Got signed URL');
-    } catch (err) {
-      console.error('❌ CreateFileSignedUrl failed:', err.message);
-      throw new Error(`Failed to get signed URL: ${err.message}`);
+    // Call gallerySignedUrls function to get signed URL
+    console.log('🔵 Fetching signed URL via backend function...');
+    const signedUrlsResult = await base44.asServiceRole.functions.invoke('gallerySignedUrls', {
+      file_uris: [file_uri]
+    });
+    
+    if (!signedUrlsResult.data || !signedUrlsResult.data[0]) {
+      throw new Error('Failed to get signed URL');
     }
-
-    const signed_url = signedUrlResponse.signed_url;
-    if (!signed_url) {
-      throw new Error('No signed_url in response');
-    }
+    
+    const signed_url = signedUrlsResult.data[0];
+    console.log('✅ Got signed URL');
 
     console.log('🔵 Generating watermarked image...');
     // Use LLM to add watermark overlay
