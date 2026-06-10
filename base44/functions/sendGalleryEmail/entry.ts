@@ -78,8 +78,10 @@ Deno.serve(async (req) => {
       }),
     });
 
-    // Mark as sent
-    await base44.asServiceRole.entities.Gallery.update(gallery.id, { sent_at: new Date().toISOString() });
+    // Mark as sent and set 7-day expiry from delivery
+    const sentAt = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    await base44.asServiceRole.entities.Gallery.update(gallery.id, { sent_at: sentAt, expires_at: expiresAt });
 
     return Response.json({ success: true });
   } catch (error) {
