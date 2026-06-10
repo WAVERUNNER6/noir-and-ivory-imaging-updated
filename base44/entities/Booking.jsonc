@@ -72,6 +72,18 @@
     "portal_token": {
       "type": "string",
       "description": "Unique token for client portal access"
+    },
+    "deposit_paid": {
+      "type": "number",
+      "description": "Deposit amount received from client (USD)"
+    },
+    "total_paid": {
+      "type": "number",
+      "description": "Total amount received from client (USD)"
+    },
+    "payment_note": {
+      "type": "string",
+      "description": "Optional note about payment (e.g. Zelle, Venmo, Cash)"
     }
   },
   "required": [

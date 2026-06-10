@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Camera, Clock, CheckCircle2, AlertCircle, CalendarDays, TrendingUp } from 'lucide-react';
+import { ArrowRight, Camera, CheckCircle2, AlertCircle, CalendarDays, Trash2 } from 'lucide-react';
 import { format, isAfter, isBefore, addDays, parseISO } from 'date-fns';
+import RevenueTracker from '@/components/admin/RevenueTracker';
+import CategoryBreakdown from '@/components/admin/CategoryBreakdown';
+import { toast } from 'sonner';
 
 const STATUS_CONFIG = {
   pending:          { label: 'Pending',          color: 'text-halide',     bg: 'bg-halide/10' },
@@ -35,6 +38,7 @@ function StatCard({ label, value, sub, icon: Icon, accent }) {
 export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     base44.entities.Booking.list('-created_date', 200).then(data => {
@@ -43,11 +47,19 @@ export default function AdminDashboard() {
     });
   }, []);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this booking? This cannot be undone.')) return;
+    setDeletingId(id);
+    await base44.entities.Booking.delete(id);
+    setBookings(prev => prev.filter(b => b.id !== id));
+    setDeletingId(null);
+    toast.success('Booking deleted');
+  };
+
   const today = new Date();
   const in48h = addDays(today, 2);
   const in7d = addDays(today, 7);
 
-  const pending = bookings.filter(b => b.status === 'pending');
   const needsAction = bookings.filter(b => ['pending', 'editing'].includes(b.status));
   const upcoming = bookings.filter(b =>
     ['confirmed', 'selecting_photos'].includes(b.status) &&
@@ -64,13 +76,11 @@ export default function AdminDashboard() {
   const active = bookings.filter(b => !['completed', 'cancelled'].includes(b.status));
   const completed = bookings.filter(b => b.status === 'completed');
 
-  // Status breakdown
   const statusCounts = bookings.reduce((acc, b) => {
     acc[b.status] = (acc[b.status] || 0) + 1;
     return acc;
   }, {});
 
-  // Upcoming shoots (next 30 days)
   const upcomingAll = bookings
     .filter(b => b.shoot_date && isAfter(parseISO(b.shoot_date), today) && b.status !== 'cancelled')
     .sort((a, b) => a.shoot_date.localeCompare(b.shoot_date))
@@ -115,45 +125,12 @@ export default function AdminDashboard() {
           <StatCard label="COMPLETED" value={completed.length} icon={CheckCircle2} sub="ALL TIME" accent="text-blue-400" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Tracker — full width */}
+        <RevenueTracker bookings={bookings} />
 
-          {/* Upcoming shoots */}
-          <div className="border border-halide/15 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <p className="font-mono text-[9px] tracking-[0.3em] text-halide/50">UPCOMING SHOOTS</p>
-              <Link to="/admin/bookings" className="font-mono text-[9px] tracking-widest text-halide hover:text-ivory transition-colors flex items-center gap-1 group">
-                VIEW ALL <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
-            {upcomingAll.length === 0 ? (
-              <p className="font-mono text-[10px] text-halide/30 tracking-widest py-4">NO UPCOMING SHOOTS</p>
-            ) : (
-              <div className="space-y-3">
-                {upcomingAll.map(b => {
-                  const cfg = STATUS_CONFIG[b.status] || STATUS_CONFIG.pending;
-                  const daysUntil = Math.ceil((parseISO(b.shoot_date) - today) / (1000 * 60 * 60 * 24));
-                  return (
-                    <div key={b.id} className="flex items-center justify-between py-3 border-t border-halide/10">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-body text-ivory text-sm truncate">{b.client_name}</p>
-                        <p className="font-mono text-[10px] text-halide/50 mt-0.5">
-                          {b.shoot_date}{b.shoot_time ? ` · ${b.shoot_time}` : ''}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="font-mono text-[9px] text-halide/40">
-                          {daysUntil === 0 ? 'TODAY' : daysUntil === 1 ? 'TOMORROW' : `${daysUntil}D`}
-                        </span>
-                        <span className={`font-mono text-[9px] tracking-widest px-2 py-1 border ${cfg.bg} ${cfg.color} border-current/20`}>
-                          {cfg.label.toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        {/* Category + Status side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CategoryBreakdown bookings={bookings} />
 
           {/* Status breakdown */}
           <div className="border border-halide/15 p-6">
@@ -166,7 +143,7 @@ export default function AdminDashboard() {
                   <div key={status} className="flex items-center gap-4">
                     <span className={`font-mono text-[9px] tracking-widest w-36 shrink-0 ${cfg.color}`}>{cfg.label.toUpperCase()}</span>
                     <div className="flex-1 h-[2px] bg-halide/10">
-                      <div className={`h-full ${cfg.bg.replace('/20', '/60').replace('/10', '/60')}`} style={{ width: `${pct}%`, backgroundColor: undefined }} />
+                      <div className="h-full bg-halide/40" style={{ width: `${pct}%` }} />
                     </div>
                     <span className="font-mono text-[10px] text-halide/50 w-6 text-right shrink-0">{count}</span>
                   </div>
@@ -178,6 +155,51 @@ export default function AdminDashboard() {
               <span className="font-display text-ivory text-2xl">{bookings.length}</span>
             </div>
           </div>
+        </div>
+
+        {/* Upcoming shoots with delete */}
+        <div className="border border-halide/15 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <p className="font-mono text-[9px] tracking-[0.3em] text-halide/50">UPCOMING SHOOTS</p>
+            <Link to="/admin/bookings" className="font-mono text-[9px] tracking-widest text-halide hover:text-ivory transition-colors flex items-center gap-1 group">
+              VIEW ALL <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+          {upcomingAll.length === 0 ? (
+            <p className="font-mono text-[10px] text-halide/30 tracking-widest py-4">NO UPCOMING SHOOTS</p>
+          ) : (
+            <div className="space-y-0">
+              {upcomingAll.map(b => {
+                const cfg = STATUS_CONFIG[b.status] || STATUS_CONFIG.pending;
+                const daysUntil = Math.ceil((parseISO(b.shoot_date) - today) / (1000 * 60 * 60 * 24));
+                return (
+                  <div key={b.id} className="flex items-center justify-between py-3 border-t border-halide/10 group">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body text-ivory text-sm truncate">{b.client_name}</p>
+                      <p className="font-mono text-[10px] text-halide/50 mt-0.5">
+                        {b.shoot_date}{b.shoot_time ? ` · ${b.shoot_time}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-mono text-[9px] text-halide/40">
+                        {daysUntil === 0 ? 'TODAY' : daysUntil === 1 ? 'TOMORROW' : `${daysUntil}D`}
+                      </span>
+                      <span className={`font-mono text-[9px] tracking-widest px-2 py-1 border ${cfg.bg} ${cfg.color} border-current/20`}>
+                        {cfg.label.toUpperCase()}
+                      </span>
+                      <button
+                        onClick={() => handleDelete(b.id)}
+                        disabled={deletingId === b.id}
+                        className="opacity-0 group-hover:opacity-100 text-halide/40 hover:text-red-400 transition-all"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Quick links */}

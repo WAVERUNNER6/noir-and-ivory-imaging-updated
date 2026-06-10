@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
-import { Check, X, Camera, Building2, Clock, ChevronDown, Paperclip, Send, Loader2, Upload, Image, FileText } from 'lucide-react';
+import { Check, X, Camera, Building2, Clock, ChevronDown, Paperclip, Send, Loader2, Upload, Image, FileText, Trash2, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import InvoiceLineItemModal from '@/components/admin/InvoiceLineItemModal.jsx';
@@ -194,7 +194,69 @@ function RawPhotoUploader({ booking, onUploaded }) {
   );
 }
 
-function BookingRow({ booking, onStatusChange }) {
+function PaymentPanel({ booking }) {
+  const [deposit, setDeposit] = useState(booking.deposit_paid || '');
+  const [total, setTotal] = useState(booking.total_paid || '');
+  const [note, setNote] = useState(booking.payment_note || '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await base44.entities.Booking.update(booking.id, {
+      deposit_paid: deposit !== '' ? parseFloat(deposit) : null,
+      total_paid: total !== '' ? parseFloat(total) : null,
+      payment_note: note,
+    });
+    toast.success('Payment info saved');
+    setSaving(false);
+  };
+
+  return (
+    <div className="border-t border-halide/10 pt-4 space-y-3">
+      <p className="font-mono text-[9px] tracking-widest text-halide/50">PAYMENT RECEIVED</p>
+      <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-1">
+          <label className="font-mono text-[9px] text-halide/40 tracking-widest">DEPOSIT ($)</label>
+          <input
+            type="number" min="0" step="0.01" value={deposit}
+            onChange={e => setDeposit(e.target.value)}
+            placeholder="0.00"
+            className="bg-noir border border-halide/20 focus:border-halide/50 outline-none font-mono text-sm text-ivory px-3 py-2 w-32 transition-colors"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="font-mono text-[9px] text-halide/40 tracking-widest">FULL PAYMENT ($)</label>
+          <input
+            type="number" min="0" step="0.01" value={total}
+            onChange={e => setTotal(e.target.value)}
+            placeholder="0.00"
+            className="bg-noir border border-halide/20 focus:border-halide/50 outline-none font-mono text-sm text-ivory px-3 py-2 w-36 transition-colors"
+          />
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-[140px]">
+          <label className="font-mono text-[9px] text-halide/40 tracking-widest">NOTE</label>
+          <input
+            type="text" value={note}
+            onChange={e => setNote(e.target.value)}
+            placeholder="e.g. Zelle, Venmo, Cash"
+            className="bg-noir border border-halide/20 focus:border-halide/50 outline-none font-body text-sm text-ivory px-3 py-2 w-full transition-colors"
+          />
+        </div>
+        <div className="flex flex-col justify-end">
+          <button
+            onClick={handleSave} disabled={saving}
+            className="flex items-center gap-2 bg-ivory/10 border border-halide/20 hover:border-ivory/50 text-ivory px-4 py-2 font-mono text-[11px] tracking-widest transition-colors disabled:opacity-40"
+          >
+            {saving ? <Loader2 size={11} className="animate-spin" /> : <DollarSign size={11} />}
+            SAVE
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BookingRow({ booking, onStatusChange, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [invoiceFile, setInvoiceFile] = useState(null);
@@ -264,6 +326,13 @@ function BookingRow({ booking, onStatusChange }) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('Delete this booking? This cannot be undone.')) return;
+    await base44.entities.Booking.delete(booking.id);
+    onDelete(booking.id);
+    toast.success('Booking deleted');
+  };
+
   const ShootIcon = booking.shoot_type === 'real_estate' ? Building2 : Camera;
   const shootTypeLabel = booking.shoot_type === 'real_estate' ? 'Real Estate' : 'Event';
 
@@ -281,6 +350,13 @@ function BookingRow({ booking, onStatusChange }) {
         </div>
         <StatusBadge status={localStatus} />
         <ChevronDown size={14} className={`text-halide/40 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <button
+          onClick={e => { e.stopPropagation(); handleDelete(); }}
+          className="shrink-0 text-halide/20 hover:text-red-400 transition-colors"
+          title="Delete booking"
+        >
+          <Trash2 size={14} />
+        </button>
       </button>
 
       <AnimatePresence>
@@ -400,6 +476,9 @@ function BookingRow({ booking, onStatusChange }) {
                 </div>
               )}
 
+              {/* Payment tracking */}
+              <PaymentPanel booking={booking} />
+
               {/* Email status log */}
               <div className="border-t border-halide/10 pt-4">
                 <EmailStatusIndicator bookingId={booking.id} />
@@ -474,6 +553,10 @@ export default function AdminBookings() {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
   };
 
+  const handleDelete = (id) => {
+    setBookings(prev => prev.filter(b => b.id !== id));
+  };
+
   const filtered = filter === 'all' ? bookings : bookings.filter(b => b.status === filter);
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
   const actionableCount = bookings.filter(b => ['pending', 'editing'].includes(b.status)).length;
@@ -524,7 +607,7 @@ export default function AdminBookings() {
         ) : (
           <div className="space-y-2">
             {filtered.map(booking => (
-              <BookingRow key={booking.id} booking={booking} onStatusChange={handleStatusChange} />
+              <BookingRow key={booking.id} booking={booking} onStatusChange={handleStatusChange} onDelete={handleDelete} />
             ))}
           </div>
         )}
