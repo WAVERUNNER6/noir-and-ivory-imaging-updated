@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { format } from 'date-fns';
+import { format, parseISO, differenceInDays } from 'date-fns';
 import { Loader2, X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,7 +21,9 @@ export default function ClientGallery() {
       return;
     }
     base44.functions.invoke('gallerySignedUrls', { access_token: token }).then(res => {
-      if (res.data?.error) {
+      if (res.data?.expired) {
+        setError('expired');
+      } else if (res.data?.error) {
         setError('Gallery not found or link has expired.');
       } else {
         setGalleryInfo(res.data.gallery);
@@ -54,12 +56,25 @@ export default function ClientGallery() {
   }
 
   if (error) {
+    const isExpired = error === 'expired';
     return (
       <div className="min-h-screen bg-noir flex items-center justify-center px-6">
         <div className="text-center">
           <p className="font-mono text-[11px] text-halide tracking-[0.3em] mb-4">GALLERY</p>
-          <h2 className="font-display text-ivory text-4xl mb-4">Link Not Found</h2>
-          <p className="font-body text-halide/60">{error}</p>
+          <h2 className="font-display text-ivory text-4xl mb-4">
+            {isExpired ? 'Gallery Expired' : 'Link Not Found'}
+          </h2>
+          <p className="font-body text-halide/60">
+            {isExpired
+              ? 'This gallery link has expired. Please contact your photographer to request a new link.'
+              : 'Gallery not found or link has expired.'}
+          </p>
+          {isExpired && (
+            <a href="mailto:studio@noirandivoryimaging.com"
+              className="inline-block mt-6 font-mono text-[11px] tracking-widest text-halide border-b border-halide/30 hover:text-ivory hover:border-ivory transition-colors">
+              studio@noirandivoryimaging.com
+            </a>
+          )}
         </div>
       </div>
     );
@@ -79,6 +94,20 @@ export default function ClientGallery() {
           {shootTypeLabel} — {galleryInfo?.shoot_date ? format(new Date(galleryInfo.shoot_date + 'T00:00:00'), 'MMMM d, yyyy') : ''}
           <span className="ml-4 text-halide/40">{photos.length} images</span>
         </p>
+        {galleryInfo?.expires_at && (() => {
+          const daysLeft = differenceInDays(parseISO(galleryInfo.expires_at), new Date());
+          const isUrgent = daysLeft <= 2;
+          return (
+            <p className={`font-mono text-[11px] mt-2 tracking-widest ${isUrgent ? 'text-red-400' : 'text-halide/50'}`}>
+              {daysLeft <= 0
+                ? 'GALLERY EXPIRES TODAY'
+                : daysLeft === 1
+                  ? 'GALLERY EXPIRES TOMORROW'
+                  : `GALLERY EXPIRES IN ${daysLeft} DAYS — ${format(parseISO(galleryInfo.expires_at), 'MMMM d, yyyy')}`
+              }
+            </p>
+          );
+        })()}
       </div>
 
       {/* Gallery Grid */}

@@ -92,6 +92,8 @@ function RawPhotoUploader({ booking, onUploaded }) {
     let gallery = galleries[0];
     if (!gallery) {
       const token = Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, '0')).join('');
+      // Expires 7 days from now
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
       gallery = await base44.entities.Gallery.create({
         booking_id: booking.id,
         client_name: booking.client_name,
@@ -104,6 +106,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
         videos: [],
         edited_photos: [],
         phase: 'raw',
+        expires_at: expiresAt,
       });
     }
 

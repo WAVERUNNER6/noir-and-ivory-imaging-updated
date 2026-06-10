@@ -15,6 +15,12 @@ Deno.serve(async (req) => {
     }
 
     const gallery = galleries[0];
+
+    // Check expiry
+    if (gallery.expires_at && new Date(gallery.expires_at) < new Date()) {
+      return Response.json({ error: 'Gallery link has expired', expired: true }, { status: 410 });
+    }
+
     const photoUris = gallery.photos || [];
     const videoUris = gallery.videos || [];
 
@@ -37,10 +43,13 @@ Deno.serve(async (req) => {
     );
 
     return Response.json({
-      gallery_id: gallery.id,
-      client_name: gallery.client_name,
-      shoot_date: gallery.shoot_date,
-      shoot_type: gallery.shoot_type,
+      gallery: {
+        id: gallery.id,
+        client_name: gallery.client_name,
+        shoot_date: gallery.shoot_date,
+        shoot_type: gallery.shoot_type,
+        expires_at: gallery.expires_at || null,
+      },
       signed_urls: signedPhotoResults.filter(Boolean),
       signed_video_urls: signedVideoResults.filter(Boolean),
     });

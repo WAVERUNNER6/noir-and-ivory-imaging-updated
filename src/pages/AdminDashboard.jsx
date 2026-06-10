@@ -6,6 +6,7 @@ import { ArrowRight, Camera, CheckCircle2, AlertCircle, CalendarDays, Trash2 } f
 import { format, isAfter, isBefore, addDays, parseISO } from 'date-fns';
 import RevenueTracker from '@/components/admin/RevenueTracker';
 import CategoryBreakdown from '@/components/admin/CategoryBreakdown';
+import BookingCalendar from '@/components/admin/BookingCalendar';
 import { toast } from 'sonner';
 
 const STATUS_CONFIG = {
@@ -156,6 +157,9 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Booking Calendar */}
+        <BookingCalendar bookings={bookings} />
 
         {/* Upcoming shoots with delete */}
         <div className="border border-halide/15 p-6">

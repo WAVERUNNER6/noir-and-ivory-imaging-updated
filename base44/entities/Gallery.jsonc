@@ -81,6 +81,10 @@
       ],
       "default": "raw",
       "description": "raw = client selecting photos; edited = final delivery"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "ISO datetime when the gallery link expires (7 days from creation by default)"
     }
   },
   "required": [
