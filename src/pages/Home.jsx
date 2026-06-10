@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import Testimonials from '@/components/home/Testimonials';
 
 const EVENT_IMG = 'https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/904a894d1_generated_086aec4a.png';
 const RE_IMG = 'https://media.base44.com/images/public/69f7b966aa5f0878d3cfb1ac/94bbfd276_generated_c5be5621.png';
@@ -185,7 +184,6 @@ export default function Home() {
       <HeroSplit />
       <AboutTeaser />
       <PortfolioPreview />
-      <Testimonials />
       <CTASection />
     </div>
   );
