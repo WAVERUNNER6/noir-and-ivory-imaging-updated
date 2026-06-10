@@ -15,6 +15,7 @@ import Contact from './pages/Contact';
 import Booking from './pages/Booking';
 import Pricing from './pages/Pricing';
 import AdminBookings from './pages/AdminBookings.jsx';
+import AdminDashboard from './pages/AdminDashboard.jsx';
 import ClientGallery from './pages/ClientGallery';
 import ClientPortal from './pages/ClientPortal';
 
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
         <Route path="/booking" element={<Booking />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/admin/bookings" element={<AdminBookings />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/gallery" element={<ClientGallery />} />
         <Route path="/portal" element={<ClientPortal />} />
       </Route>
