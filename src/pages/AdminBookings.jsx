@@ -37,17 +37,28 @@ async function uploadBatch(files) {
 
 function PhotoPreviewThumbnail({ fileUri, onDelete }) {
   const [signedUrl, setSignedUrl] = useState(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (!fileUri) return;
+    // If it's already a public URL, use it directly
+    if (fileUri.startsWith('http')) {
+      setSignedUrl(fileUri);
+      return;
+    }
     base44.integrations.Core.CreateFileSignedUrl({ file_uri: fileUri, expires_in: 3600 })
       .then(r => setSignedUrl(r.signed_url))
-      .catch(() => {});
+      .catch(e => { console.error('Signed URL error:', e, fileUri); setError(true); });
   }, [fileUri]);
 
   return (
     <div className="relative group">
       {signedUrl ? (
-        <img src={signedUrl} alt="preview" className="w-full aspect-square object-cover border border-halide/20" />
+        <img src={signedUrl} alt="preview" className="w-full aspect-square object-cover border border-halide/20" onError={() => setError(true)} />
+      ) : error ? (
+        <div className="w-full aspect-square bg-red-900/20 border border-red-800/30 flex items-center justify-center">
+          <X size={12} className="text-red-400/50" />
+        </div>
       ) : (
         <div className="w-full aspect-square bg-halide/10 border border-halide/20 flex items-center justify-center">
           <Loader2 size={12} className="animate-spin text-halide/30" />
@@ -144,6 +155,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
       }
 
       const updated = [...(gallery.photos || []), ...newUris];
+      console.log('Uploaded URIs:', newUris);
       await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
       setGallery({ ...gallery, photos: updated });
       toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
