@@ -374,6 +374,37 @@ function ResetSelectionButton({ booking, onReset }) {
   );
 }
 
+function ResendGalleryButton({ booking }) {
+  const [sending, setSending] = useState(false);
+
+  const handleResend = async () => {
+    setSending(true);
+    try {
+      const appUrl = window.location.origin;
+      await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'final_gallery' });
+      toast.success(`Gallery link resent to ${booking.client_email}`);
+    } catch (err) {
+      toast.error(`Failed: ${err.message}`);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2 pt-1">
+      <p className="font-mono text-[10px] text-blue-300/70 tracking-widest">Upload edited photos below when ready.</p>
+      <button
+        onClick={handleResend}
+        disabled={sending}
+        className="flex items-center gap-2 border border-blue-800/40 text-blue-300/70 hover:text-blue-300 hover:border-blue-700 px-5 py-2.5 font-mono text-[11px] tracking-widest transition-colors disabled:opacity-40 w-fit"
+      >
+        {sending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+        {sending ? 'SENDING...' : 'RESEND GALLERY LINK TO CLIENT'}
+      </button>
+    </div>
+  );
+}
+
 function BookingRow({ booking, onStatusChange, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -641,9 +672,7 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
                   </div>
                 )}
                 {localStatus === 'editing' && (
-                  <p className="font-mono text-[10px] text-blue-300/70 tracking-widest pt-1">
-                    Upload edited photos below when ready.
-                  </p>
+                  <ResendGalleryButton booking={booking} />
                 )}
                 {localStatus === 'cancelled' && (
                   <p className="font-mono text-[10px] text-halide/40 tracking-widest pt-2">
