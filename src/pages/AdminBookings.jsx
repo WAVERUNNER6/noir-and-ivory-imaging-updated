@@ -503,6 +503,21 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
                 </div>
               )}
 
+              {/* Raw photo uploader also available during selecting_photos — add more photos after link sent */}
+              {localStatus === 'selecting_photos' && (
+                <div className="border-t border-halide/10 pt-4">
+                  <RawPhotoUploader
+                    booking={booking}
+                    onUploaded={(galleryId, count, newStatus) => {
+                      if (newStatus) {
+                        setLocalStatus(newStatus);
+                        onStatusChange(booking.id, newStatus);
+                      }
+                    }}
+                  />
+                </div>
+              )}
+
               {/* Gallery viewer for selecting_photos — see what was uploaded + what client picks */}
               {(localStatus === 'selecting_photos' || localStatus === 'editing') && (
                 <div className="border-t border-halide/10 pt-4">
