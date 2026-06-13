@@ -381,7 +381,7 @@ function ResendGalleryButton({ booking }) {
     setSending(true);
     try {
       const appUrl = window.location.origin;
-      await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'final_gallery' });
+      await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'photo_selection' });
       toast.success(`Gallery link resent to ${booking.client_email}`);
     } catch (err) {
       toast.error(`Failed: ${err.message}`);
