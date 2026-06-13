@@ -271,6 +271,9 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
   const [editingEmail, setEditingEmail] = useState(false);
   const [emailValue, setEmailValue] = useState(booking.client_email);
   const [savingEmail, setSavingEmail] = useState(false);
+  const [editingShootType, setEditingShootType] = useState(false);
+  const [shootTypeValue, setShootTypeValue] = useState(booking.shoot_type);
+  const [savingShootType, setSavingShootType] = useState(false);
   const invoiceInputRef = useRef();
 
   // Load gallery for editing step & watermark tracking
@@ -340,6 +343,14 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
     setSavingEmail(false);
   };
 
+  const handleSaveShootType = async () => {
+    setSavingShootType(true);
+    await base44.entities.Booking.update(booking.id, { shoot_type: shootTypeValue });
+    toast.success('Booking type updated');
+    setEditingShootType(false);
+    setSavingShootType(false);
+  };
+
   const handleDelete = async () => {
     if (!window.confirm('Delete this booking? This cannot be undone.')) return;
     await base44.entities.Booking.delete(booking.id);
@@ -385,14 +396,47 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
             <div className="px-6 pb-6 border-t border-halide/10 pt-5 space-y-5">
               {/* Details grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Editable shoot type */}
+                <div>
+                  <p className="font-mono text-[9px] tracking-widest text-halide/50 mb-1">SHOOT TYPE</p>
+                  {editingShootType ? (
+                    <div className="flex flex-col gap-2">
+                      <input
+                        type="text"
+                        value={shootTypeValue}
+                        onChange={e => setShootTypeValue(e.target.value)}
+                        placeholder="e.g. Personal Event, Real Estate..."
+                        className="bg-noir border border-halide/40 focus:border-ivory outline-none font-mono text-sm text-ivory px-3 py-1.5 transition-colors w-full"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={handleSaveShootType} disabled={savingShootType}
+                          className="flex items-center gap-1 bg-ivory text-noir px-3 py-1 font-mono text-[10px] tracking-widest hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40">
+                          {savingShootType ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />} SAVE
+                        </button>
+                        <button onClick={() => { setEditingShootType(false); setShootTypeValue(booking.shoot_type); }}
+                          className="font-mono text-[10px] text-halide/50 hover:text-halide tracking-widest">
+                          CANCEL
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="font-body text-sm text-ivory/80">{shootTypeValue}</p>
+                      <button onClick={() => setEditingShootType(true)}
+                        className="font-mono text-[9px] text-halide/40 hover:text-halide tracking-widest underline transition-colors">
+                        EDIT
+                      </button>
+                    </div>
+                  )}
+                </div>
                 {[
-                  ['SHOOT TYPE', shootTypeLabel],
                   ['DATE', booking.shoot_date],
                   ['TIME', booking.shoot_time ? `${booking.shoot_time}${booking.shoot_end_time ? ` — ${booking.shoot_end_time}` : ''}` : 'Flexible'],
                   ['LOCATION', booking.location || 'TBD'],
                   ['PACKAGE', booking.package_request || 'Not specified'],
                   ['PHONE', booking.client_phone || '—'],
                 ].map(([label, val]) => (
+
                   <div key={label}>
                     <p className="font-mono text-[9px] tracking-widest text-halide/50 mb-1">{label}</p>
                     <p className="font-body text-sm text-ivory/80">{val}</p>
