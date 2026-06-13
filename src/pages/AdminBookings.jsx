@@ -85,6 +85,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
   const handleFiles = async (files) => {
     const fileArray = Array.from(files);
     if (!fileArray.length) return;
+    if (fileArray.length > 20 && !window.confirm(`You're uploading ${fileArray.length} photos at once. For best results, upload 15–20 at a time. Continue anyway?`)) return;
     setUploading(true);
     setProgress({ done: 0, total: fileArray.length });
 
