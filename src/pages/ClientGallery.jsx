@@ -28,6 +28,9 @@ export default function ClientGallery() {
       } else {
         setGalleryInfo(res.data.gallery);
         setPhotos(res.data.signed_urls || []);
+        if (res.data.gallery?.failed_count > 0) {
+          console.warn(`${res.data.gallery.failed_count} photo(s) failed to load signed URLs`);
+        }
       }
       setLoading(false);
     });
@@ -93,6 +96,9 @@ export default function ClientGallery() {
         <p className="font-mono text-sm text-halide/60 tracking-wider">
           {shootTypeLabel} — {galleryInfo?.shoot_date ? format(new Date(galleryInfo.shoot_date + 'T00:00:00'), 'MMMM d, yyyy') : ''}
           <span className="ml-4 text-halide/40">{photos.length} images</span>
+          {galleryInfo?.failed_count > 0 && (
+            <span className="ml-4 text-yellow-400/80">({galleryInfo.failed_count} failed to load — please refresh or contact your photographer)</span>
+          )}
         </p>
         {galleryInfo?.expires_at && (() => {
           const daysLeft = differenceInDays(parseISO(galleryInfo.expires_at), new Date());

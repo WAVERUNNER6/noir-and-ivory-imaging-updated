@@ -23,22 +23,19 @@ Deno.serve(async (req) => {
 
     if (gallery) {
       if ((gallery.photos || []).length > 0) {
-        rawPhotoUrls = await Promise.all(
-          (gallery.photos || []).map(uri =>
-            base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 7200 })
-              .then(r => r.signed_url).catch(() => null)
-          )
-        );
-        rawPhotoUrls = rawPhotoUrls.filter(Boolean);
+        // Sequential to avoid timeouts on large galleries
+        for (const uri of (gallery.photos || [])) {
+          const url = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 43200 })
+            .then(r => r.signed_url).catch(() => null);
+          if (url) rawPhotoUrls.push(url);
+        }
       }
       if ((gallery.edited_photos || []).length > 0) {
-        editedPhotoUrls = await Promise.all(
-          (gallery.edited_photos || []).map(uri =>
-            base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 7200 })
-              .then(r => r.signed_url).catch(() => null)
-          )
-        );
-        editedPhotoUrls = editedPhotoUrls.filter(Boolean);
+        for (const uri of (gallery.edited_photos || [])) {
+          const url = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 43200 })
+            .then(r => r.signed_url).catch(() => null);
+          if (url) editedPhotoUrls.push(url);
+        }
       }
     }
 

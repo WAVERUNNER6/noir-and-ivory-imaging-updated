@@ -267,9 +267,10 @@ function RawPhotoUploader({ booking, onUploaded }) {
         onClick={handleSendSelectionLink}
         disabled={sending || !gallery?.photos?.length}
         className="flex items-center gap-2 bg-purple-900/30 border border-purple-800/40 text-purple-300 px-5 py-2.5 font-mono text-[11px] tracking-widest hover:bg-purple-900/50 transition-colors disabled:opacity-40"
+        title={!gallery?.photos?.length ? 'Upload photos first' : 'Send or re-send the photo selection link to the client'}
       >
         {sending ? <Loader2 size={12} className="animate-spin" /> : <Image size={12} />}
-        {sending ? 'SENDING...' : 'SEND PHOTO SELECTION LINK'}
+        {sending ? 'SENDING...' : 'SEND / RESEND PHOTO SELECTION LINK'}
       </button>
     </div>
   );

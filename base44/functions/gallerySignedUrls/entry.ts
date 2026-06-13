@@ -25,22 +25,25 @@ Deno.serve(async (req) => {
     const videoUris = gallery.videos || [];
 
     // Generate signed URLs for photos in parallel batches
-    const signedPhotoResults = await Promise.all(
-      photoUris.map(uri =>
-        base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 3600 })
-          .then(r => r.signed_url)
-          .catch(() => null)
-      )
-    );
+    // Generate signed URLs sequentially to avoid timeouts on large galleries
+    const signedPhotoResults = [];
+    for (const uri of photoUris) {
+      const result = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 43200 })
+        .then(r => r.signed_url)
+        .catch(() => null);
+      signedPhotoResults.push(result);
+    }
 
-    // Generate signed URLs for videos in parallel batches
-    const signedVideoResults = await Promise.all(
-      videoUris.map(uri =>
-        base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 3600 })
-          .then(r => r.signed_url)
-          .catch(() => null)
-      )
-    );
+    const signedVideoResults = [];
+    for (const uri of videoUris) {
+      const result = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 43200 })
+        .then(r => r.signed_url)
+        .catch(() => null);
+      signedVideoResults.push(result);
+    }
+
+    const validPhotos = signedPhotoResults.filter(Boolean);
+    const failedCount = signedPhotoResults.length - validPhotos.length;
 
     return Response.json({
       gallery: {
@@ -49,8 +52,10 @@ Deno.serve(async (req) => {
         shoot_date: gallery.shoot_date,
         shoot_type: gallery.shoot_type,
         expires_at: gallery.expires_at || null,
+        total_photos: photoUris.length,
+        failed_count: failedCount,
       },
-      signed_urls: signedPhotoResults.filter(Boolean),
+      signed_urls: validPhotos,
       signed_video_urls: signedVideoResults.filter(Boolean),
     });
   } catch (error) {
