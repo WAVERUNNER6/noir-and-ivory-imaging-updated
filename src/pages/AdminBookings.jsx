@@ -340,33 +340,36 @@ function PaymentPanel({ booking }) {
 
 function ResetSelectionButton({ booking, onReset }) {
   const [resetting, setResetting] = useState(false);
-  const [resending, setResending] = useState(false);
 
   const handleResetAndResend = async () => {
-    if (!window.confirm('This will reopen photo selection for the client. Their previous picks will stay pre-selected, and new photos you uploaded will appear. Continue?')) return;
+    if (!window.confirm('This will reopen photo selection for the client and send them a new link. Continue?')) return;
     setResetting(true);
-    // Reset selection_submitted_at via clientPortalAction
-    await base44.functions.invoke('clientPortalAction', {
-      portal_token: booking.portal_token,
-      action: 'reset_photo_selection',
-      data: {},
-    });
-    // Resend the selection link
-    const appUrl = window.location.origin;
-    await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'photo_selection' });
-    toast.success(`Selection reopened and new link sent to ${booking.client_email}`);
-    onReset && onReset();
-    setResetting(false);
+    try {
+      // Directly clear selection_submitted_at on the gallery entity
+      const galleries = await base44.entities.Gallery.filter({ booking_id: booking.id });
+      if (galleries.length) {
+        await base44.entities.Gallery.update(galleries[0].id, { selection_submitted_at: null });
+      }
+      // Resend the selection link
+      const appUrl = window.location.origin;
+      await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'photo_selection' });
+      toast.success(`New selection link sent to ${booking.client_email}`);
+      onReset && onReset();
+    } catch (err) {
+      toast.error(`Failed: ${err.message}`);
+    } finally {
+      setResetting(false);
+    }
   };
 
   return (
     <button
       onClick={handleResetAndResend}
       disabled={resetting}
-      className="flex items-center gap-2 border border-purple-800/40 text-purple-300/70 hover:text-purple-300 hover:border-purple-700 px-4 py-2 font-mono text-[10px] tracking-widest transition-colors disabled:opacity-40 w-fit"
+      className="flex items-center gap-2 bg-purple-900/30 border border-purple-800/40 text-purple-300 px-5 py-2.5 font-mono text-[11px] tracking-widest hover:bg-purple-900/50 transition-colors disabled:opacity-40"
     >
-      {resetting ? <Loader2 size={11} className="animate-spin" /> : <Image size={11} />}
-      {resetting ? 'REOPENING...' : 'REOPEN SELECTION & RESEND LINK'}
+      {resetting ? <Loader2 size={12} className="animate-spin" /> : <Image size={12} />}
+      {resetting ? 'SENDING...' : 'RESEND PHOTO SELECTION LINK'}
     </button>
   );
 }
