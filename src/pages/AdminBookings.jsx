@@ -82,6 +82,26 @@ function RawPhotoUploader({ booking, onUploaded }) {
 
 
 
+  const compressImage = (file) => new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 2400;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+        else { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+
   const handleFiles = async (files) => {
     const fileArray = Array.from(files);
     if (!fileArray.length) return;
@@ -114,11 +134,13 @@ function RawPhotoUploader({ booking, onUploaded }) {
 
     const newUris = [];
     try {
-      for (let i = 0; i < fileArray.length; i++) {
-        setProgress({ done: i, total: fileArray.length, currentName: fileArray[i].name });
-        const result = await base44.integrations.Core.UploadPrivateFile({ file: fileArray[i] });
-        newUris.push(result.file_uri);
-        setProgress({ done: i + 1, total: fileArray.length, currentName: fileArray[i].name });
+      for (let i = 0; i < fileArray.length; i += 3) {
+        const batch = fileArray.slice(i, i + 3);
+        setProgress({ done: i, total: fileArray.length, currentName: `Compressing & uploading batch ${Math.floor(i/3)+1}...` });
+        const compressed = await Promise.all(batch.map(compressImage));
+        const results = await Promise.all(compressed.map(f => base44.integrations.Core.UploadPrivateFile({ file: f }).then(r => r.file_uri)));
+        results.forEach(uri => newUris.push(uri));
+        setProgress({ done: Math.min(i + 3, fileArray.length), total: fileArray.length, currentName: '' });
       }
 
       const updated = [...(gallery.photos || []), ...newUris];
