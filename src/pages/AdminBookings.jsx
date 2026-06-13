@@ -268,6 +268,9 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
   const [editingGallery, setEditingGallery] = useState(null);
   const [signedInvoiceUrl, setSignedInvoiceUrl] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [emailValue, setEmailValue] = useState(booking.client_email);
+  const [savingEmail, setSavingEmail] = useState(false);
   const invoiceInputRef = useRef();
 
   // Load gallery for editing step & watermark tracking
@@ -329,6 +332,14 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
     }
   };
 
+  const handleSaveEmail = async () => {
+    setSavingEmail(true);
+    await base44.entities.Booking.update(booking.id, { client_email: emailValue });
+    toast.success('Email updated');
+    setEditingEmail(false);
+    setSavingEmail(false);
+  };
+
   const handleDelete = async () => {
     if (!window.confirm('Delete this booking? This cannot be undone.')) return;
     await base44.entities.Booking.delete(booking.id);
@@ -388,6 +399,37 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
                   </div>
                 ))}
               </div>
+              {/* Editable email */}
+              <div>
+                <p className="font-mono text-[9px] tracking-widest text-halide/50 mb-1">CLIENT EMAIL</p>
+                {editingEmail ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      value={emailValue}
+                      onChange={e => setEmailValue(e.target.value)}
+                      className="bg-noir border border-halide/40 focus:border-ivory outline-none font-mono text-sm text-ivory px-3 py-1.5 transition-colors"
+                    />
+                    <button onClick={handleSaveEmail} disabled={savingEmail}
+                      className="flex items-center gap-1 bg-ivory text-noir px-3 py-1.5 font-mono text-[10px] tracking-widest hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40">
+                      {savingEmail ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />} SAVE
+                    </button>
+                    <button onClick={() => { setEditingEmail(false); setEmailValue(booking.client_email); }}
+                      className="font-mono text-[10px] text-halide/50 hover:text-halide tracking-widest">
+                      CANCEL
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <p className="font-body text-sm text-ivory/80">{emailValue}</p>
+                    <button onClick={() => setEditingEmail(true)}
+                      className="font-mono text-[9px] text-halide/40 hover:text-halide tracking-widest underline transition-colors">
+                      EDIT
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {booking.details && (
                 <div>
                   <p className="font-mono text-[9px] tracking-widest text-halide/50 mb-1">DETAILS</p>
