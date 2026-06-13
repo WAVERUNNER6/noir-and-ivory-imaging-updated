@@ -28,7 +28,7 @@ function StatusBadge({ status }) {
   );
 }
 
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 3;
 async function uploadBatch(files) {
   return Promise.all(
     files.map(file => base44.integrations.Core.UploadPrivateFile({ file }).then(r => ({ uri: r.file_uri })))
@@ -112,19 +112,32 @@ function RawPhotoUploader({ booking, onUploaded }) {
     }
 
     const newUris = [];
-    for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
-      const batch = fileArray.slice(i, i + BATCH_SIZE);
-      const results = await uploadBatch(batch);
-      results.forEach(({ uri }) => newUris.push(uri));
-      setProgress({ done: Math.min(i + BATCH_SIZE, fileArray.length), total: fileArray.length });
-    }
+    try {
+      for (let i = 0; i < fileArray.length; i++) {
+        const result = await base44.integrations.Core.UploadPrivateFile({ file: fileArray[i] });
+        newUris.push(result.file_uri);
+        setProgress({ done: i + 1, total: fileArray.length });
+      }
 
-    const updated = [...(gallery.photos || []), ...newUris];
-    await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
-    setGallery(prev => prev ? { ...prev, photos: updated } : null);
-    toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
-    setUploading(false);
-    onUploaded && onUploaded(gallery.id, updated.length);
+      const updated = [...(gallery.photos || []), ...newUris];
+      await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
+      setGallery(prev => prev ? { ...prev, photos: updated } : null);
+      toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
+      onUploaded && onUploaded(gallery.id, updated.length);
+    } catch (err) {
+      if (newUris.length > 0) {
+        // Save whatever succeeded before the failure
+        const updated = [...(gallery.photos || []), ...newUris];
+        await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
+        setGallery(prev => prev ? { ...prev, photos: updated } : null);
+        toast.warning(`Uploaded ${newUris.length} of ${fileArray.length} photos. Some failed: ${err.message}`);
+        onUploaded && onUploaded(gallery.id, updated.length);
+      } else {
+        toast.error(`Upload failed: ${err.message}`);
+      }
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSendSelectionLink = async () => {
