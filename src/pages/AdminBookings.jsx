@@ -67,7 +67,7 @@ function PhotoPreviewThumbnail({ fileUri, onDelete }) {
 
 function RawPhotoUploader({ booking, onUploaded }) {
   const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const [progress, setProgress] = useState({ done: 0, total: 0, currentName: '' });
   const [sending, setSending] = useState(false);
   const [gallery, setGallery] = useState(null);
   const [selectedIndices, setSelectedIndices] = useState(new Set());
@@ -114,13 +114,11 @@ function RawPhotoUploader({ booking, onUploaded }) {
 
     const newUris = [];
     try {
-      for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
-        const batch = fileArray.slice(i, i + BATCH_SIZE);
-        const results = await Promise.all(
-          batch.map(file => base44.integrations.Core.UploadPrivateFile({ file }).then(r => r.file_uri))
-        );
-        results.forEach(uri => newUris.push(uri));
-        setProgress({ done: Math.min(i + BATCH_SIZE, fileArray.length), total: fileArray.length });
+      for (let i = 0; i < fileArray.length; i++) {
+        setProgress({ done: i, total: fileArray.length, currentName: fileArray[i].name });
+        const result = await base44.integrations.Core.UploadPrivateFile({ file: fileArray[i] });
+        newUris.push(result.file_uri);
+        setProgress({ done: i + 1, total: fileArray.length, currentName: fileArray[i].name });
       }
 
       const updated = [...(gallery.photos || []), ...newUris];
@@ -170,8 +168,11 @@ function RawPhotoUploader({ booking, onUploaded }) {
             <Loader2 size={14} className="animate-spin text-halide" />
             <span className="font-mono text-[10px] text-halide tracking-wider">UPLOADING {progress.done} / {progress.total}</span>
             <div className="w-40 h-[2px] bg-halide/10">
-              <div className="h-full bg-halide/60 transition-all" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
+              <div className="h-full bg-halide/60 transition-all" style={{ width: `${progress.total ? (progress.done / progress.total) * 100 : 0}%` }} />
             </div>
+            {progress.currentName && (
+              <span className="font-mono text-[9px] text-halide/40 tracking-wider truncate max-w-[200px]">{progress.currentName}</span>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-center gap-2">
