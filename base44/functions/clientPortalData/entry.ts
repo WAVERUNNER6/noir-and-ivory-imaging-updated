@@ -1,5 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+async function getSignedUrlWithRetry(base44, uri, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const result = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 43200 });
+      if (result?.signed_url) return result.signed_url;
+    } catch (_) {
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 300 * attempt)); // brief backoff
+      }
+    }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -16,34 +30,27 @@ Deno.serve(async (req) => {
     const galleries = await base44.asServiceRole.entities.Gallery.filter({ booking_id: booking.id });
     const gallery = galleries[0] || null;
 
-    // Generate signed URLs for raw photos (for selection)
     let rawPhotoUrls = [];
     let editedPhotoUrls = [];
     let signedInvoiceUrl = null;
 
     if (gallery) {
-      if ((gallery.photos || []).length > 0) {
-        // Sequential to avoid timeouts on large galleries
-        for (const uri of (gallery.photos || [])) {
-          const url = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 43200 })
-            .then(r => r.signed_url).catch(() => null);
-          if (url) rawPhotoUrls.push(url);
-        }
+      // Generate signed URLs for raw photos with retry
+      for (const uri of (gallery.photos || [])) {
+        const url = await getSignedUrlWithRetry(base44, uri);
+        if (url) rawPhotoUrls.push(url);
       }
-      if ((gallery.edited_photos || []).length > 0) {
-        for (const uri of (gallery.edited_photos || [])) {
-          const url = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 43200 })
-            .then(r => r.signed_url).catch(() => null);
-          if (url) editedPhotoUrls.push(url);
-        }
+
+      // Generate signed URLs for edited photos with retry
+      for (const uri of (gallery.edited_photos || [])) {
+        const url = await getSignedUrlWithRetry(base44, uri);
+        if (url) editedPhotoUrls.push(url);
       }
     }
 
     // Generate signed URL for signed invoice if exists
     if (booking.signed_invoice_url && booking.signed_invoice_url.startsWith('private://')) {
-      signedInvoiceUrl = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
-        file_uri: booking.signed_invoice_url, expires_in: 3600
-      }).then(r => r.signed_url).catch(() => null);
+      signedInvoiceUrl = await getSignedUrlWithRetry(base44, booking.signed_invoice_url);
     } else if (booking.signed_invoice_url) {
       signedInvoiceUrl = booking.signed_invoice_url;
     }
