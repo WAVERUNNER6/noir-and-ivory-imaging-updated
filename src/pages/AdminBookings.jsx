@@ -70,6 +70,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [sending, setSending] = useState(false);
   const [gallery, setGallery] = useState(null);
+  const [selectedIndices, setSelectedIndices] = useState(new Set());
   const fileInputRef = useRef();
 
   // Load gallery on mount
@@ -165,21 +166,80 @@ function RawPhotoUploader({ booking, onUploaded }) {
 
       {gallery?.photos?.length > 0 && (
         <div className="border border-halide/10 p-4 space-y-3">
-          <p className="font-mono text-[9px] tracking-widest text-halide/50">{gallery.photos.length} PHOTOS UPLOADED</p>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <p className="font-mono text-[9px] tracking-widest text-halide/50">{gallery.photos.length} PHOTOS UPLOADED</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  if (selectedIndices.size === gallery.photos.length) {
+                    setSelectedIndices(new Set());
+                  } else {
+                    setSelectedIndices(new Set(gallery.photos.map((_, i) => i)));
+                  }
+                }}
+                className="font-mono text-[9px] tracking-widest text-halide/50 hover:text-ivory transition-colors"
+              >
+                {selectedIndices.size === gallery.photos.length ? 'DESELECT ALL' : 'SELECT ALL'}
+              </button>
+              {selectedIndices.size > 0 && (
+                <button
+                  onClick={async () => {
+                    if (!window.confirm(`Delete ${selectedIndices.size} selected photo${selectedIndices.size !== 1 ? 's' : ''}?`)) return;
+                    const updated = gallery.photos.filter((_, i) => !selectedIndices.has(i));
+                    await base44.entities.Gallery.update(gallery.id, { photos: updated });
+                    setGallery(prev => prev ? { ...prev, photos: updated } : null);
+                    setSelectedIndices(new Set());
+                    toast.success(`Deleted ${selectedIndices.size} photo${selectedIndices.size !== 1 ? 's' : ''}`);
+                  }}
+                  className="font-mono text-[9px] tracking-widest text-red-400/70 hover:text-red-400 transition-colors"
+                >
+                  DELETE SELECTED ({selectedIndices.size})
+                </button>
+              )}
+              {selectedIndices.size === 0 && (
+                <button
+                  onClick={async () => {
+                    if (!window.confirm('Delete ALL photos? This cannot be undone.')) return;
+                    await base44.entities.Gallery.update(gallery.id, { photos: [] });
+                    setGallery(prev => prev ? { ...prev, photos: [] } : null);
+                    toast.success('All photos deleted');
+                  }}
+                  className="font-mono text-[9px] tracking-widest text-red-400/60 hover:text-red-400 transition-colors"
+                >
+                  DELETE ALL
+                </button>
+              )}
+            </div>
+          </div>
           <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
             {gallery.photos.map((photoUri, idx) => (
-              <PhotoPreviewThumbnail 
-                key={idx} 
-                fileUri={photoUri}
-                onDelete={async () => {
-                  const updated = gallery.photos.filter((_, i) => i !== idx);
-                  await base44.entities.Gallery.update(gallery.id, { photos: updated });
-                  setGallery(prev => prev ? { ...prev, photos: updated } : null);
-                  toast.success('Photo removed');
+              <div
+                key={idx}
+                onClick={() => {
+                  setSelectedIndices(prev => {
+                    const next = new Set(prev);
+                    if (next.has(idx)) next.delete(idx); else next.add(idx);
+                    return next;
+                  });
                 }}
-              />
+                className={`cursor-pointer ring-2 transition-all ${selectedIndices.has(idx) ? 'ring-ivory' : 'ring-transparent'}`}
+              >
+                <PhotoPreviewThumbnail 
+                  fileUri={photoUri}
+                  onDelete={async () => {
+                    const updated = gallery.photos.filter((_, i) => i !== idx);
+                    await base44.entities.Gallery.update(gallery.id, { photos: updated });
+                    setGallery(prev => prev ? { ...prev, photos: updated } : null);
+                    setSelectedIndices(prev => { const next = new Set(prev); next.delete(idx); return next; });
+                    toast.success('Photo removed');
+                  }}
+                />
+              </div>
             ))}
           </div>
+          {selectedIndices.size > 0 && (
+            <p className="font-mono text-[9px] text-halide/40 tracking-widest">{selectedIndices.size} SELECTED — click photos to toggle, or use buttons above</p>
+          )}
         </div>
       )}
 
@@ -401,13 +461,19 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
                   <p className="font-mono text-[9px] tracking-widest text-halide/50 mb-1">SHOOT TYPE</p>
                   {editingShootType ? (
                     <div className="flex flex-col gap-2">
-                      <input
-                        type="text"
+                      <select
                         value={shootTypeValue}
                         onChange={e => setShootTypeValue(e.target.value)}
-                        placeholder="e.g. Personal Event, Real Estate..."
                         className="bg-noir border border-halide/40 focus:border-ivory outline-none font-mono text-sm text-ivory px-3 py-1.5 transition-colors w-full"
-                      />
+                      >
+                        <option value="event">Event</option>
+                        <option value="real_estate">Real Estate</option>
+                        <option value="personal_event">Personal Event</option>
+                        <option value="business_event">Business Event</option>
+                        <option value="wedding">Wedding</option>
+                        <option value="corporate">Corporate</option>
+                        <option value="custom">Custom</option>
+                      </select>
                       <div className="flex gap-2">
                         <button onClick={handleSaveShootType} disabled={savingShootType}
                           className="flex items-center gap-1 bg-ivory text-noir px-3 py-1 font-mono text-[10px] tracking-widest hover:bg-halide hover:text-ivory transition-colors disabled:opacity-40">
