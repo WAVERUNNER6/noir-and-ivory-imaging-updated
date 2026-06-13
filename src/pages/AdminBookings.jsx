@@ -145,7 +145,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
 
       const updated = [...(gallery.photos || []), ...newUris];
       await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
-      setGallery(prev => prev ? { ...prev, photos: updated } : null);
+      setGallery({ ...gallery, photos: updated });
       toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
       onUploaded && onUploaded(gallery.id, updated.length);
     } catch (err) {
@@ -153,7 +153,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
         // Save whatever succeeded before the failure
         const updated = [...(gallery.photos || []), ...newUris];
         await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
-        setGallery(prev => prev ? { ...prev, photos: updated } : null);
+        setGallery({ ...gallery, photos: updated });
         toast.warning(`Uploaded ${newUris.length} of ${fileArray.length} photos. Some failed: ${err.message}`);
         onUploaded && onUploaded(gallery.id, updated.length);
       } else {
