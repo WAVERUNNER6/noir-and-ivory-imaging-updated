@@ -34,18 +34,36 @@ Deno.serve(async (req) => {
     let editedPhotoUrls = [];
     let signedInvoiceUrl = null;
 
+    let rawFailedCount = 0;
+    let editedFailedCount = 0;
+
     if (gallery) {
       // Generate signed URLs for raw photos with retry
       for (const uri of (gallery.photos || [])) {
         const url = await getSignedUrlWithRetry(base44, uri);
         if (url) rawPhotoUrls.push(url);
+        else rawFailedCount++;
       }
 
       // Generate signed URLs for edited photos with retry
       for (const uri of (gallery.edited_photos || [])) {
         const url = await getSignedUrlWithRetry(base44, uri);
         if (url) editedPhotoUrls.push(url);
+        else editedFailedCount++;
       }
+    }
+
+    const totalFailed = rawFailedCount + editedFailedCount;
+    // If any photos failed to load, send an alert email to the admin
+    if (totalFailed > 0) {
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: 'studio@noirandivoryimaging.com',
+          from_name: 'Noir & Ivory Portal',
+          subject: `⚠️ Photo Load Failure — ${booking.client_name}`,
+          body: `${totalFailed} photo(s) failed to generate signed URLs when ${booking.client_name} loaded their portal.\n\nRaw failures: ${rawFailedCount}\nEdited failures: ${editedFailedCount}\n\nBooking ID: ${booking.id}\nClient: ${booking.client_name} (${booking.client_email})\nStatus: ${booking.status}\n\nPlease check the gallery and re-upload any missing photos if needed.`,
+        });
+      } catch (_) { /* non-blocking */ }
     }
 
     // Generate signed URL for signed invoice if exists
@@ -77,6 +95,7 @@ Deno.serve(async (req) => {
       } : null,
       raw_photo_urls: rawPhotoUrls,
       edited_photo_urls: editedPhotoUrls,
+      failed_counts: { raw: rawFailedCount, edited: editedFailedCount },
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

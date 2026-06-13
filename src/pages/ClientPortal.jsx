@@ -338,7 +338,8 @@ export default function ClientPortal() {
     </div>
   );
 
-  const { booking, gallery, raw_photo_urls, edited_photo_urls } = data;
+  const { booking, gallery, raw_photo_urls, edited_photo_urls, failed_counts } = data;
+  const totalFailed = (failed_counts?.raw || 0) + (failed_counts?.edited || 0);
   const status = booking.status;
 
   const renderStep = () => {
@@ -396,6 +397,16 @@ export default function ClientPortal() {
         <h1 className="font-display text-ivory text-4xl md:text-5xl leading-tight">{booking.client_name}</h1>
         <p className="font-mono text-[11px] text-halide/50 tracking-wider mt-2">{booking.shoot_date} &middot; {booking.package_request || booking.shoot_type}</p>
       </div>
+      {totalFailed > 0 && (
+        <div className="bg-yellow-900/30 border-b border-yellow-700/40 px-6 md:px-12 py-3 flex items-center justify-between gap-4">
+          <p className="font-mono text-[10px] text-yellow-300/80 tracking-widest">
+            ⚠ {totalFailed} PHOTO{totalFailed !== 1 ? 'S' : ''} FAILED TO LOAD — TRY REFRESHING THE PAGE
+          </p>
+          <button onClick={load} className="font-mono text-[10px] text-yellow-300 border border-yellow-700/50 px-3 py-1 hover:bg-yellow-900/40 transition-colors tracking-widest">
+            REFRESH
+          </button>
+        </div>
+      )}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-14 pb-28">
         {renderStep()}
       </div>
