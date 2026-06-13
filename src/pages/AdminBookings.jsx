@@ -114,10 +114,13 @@ function RawPhotoUploader({ booking, onUploaded }) {
 
     const newUris = [];
     try {
-      for (let i = 0; i < fileArray.length; i++) {
-        const result = await base44.integrations.Core.UploadPrivateFile({ file: fileArray[i] });
-        newUris.push(result.file_uri);
-        setProgress({ done: i + 1, total: fileArray.length });
+      for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
+        const batch = fileArray.slice(i, i + BATCH_SIZE);
+        const results = await Promise.all(
+          batch.map(file => base44.integrations.Core.UploadPrivateFile({ file }).then(r => r.file_uri))
+        );
+        results.forEach(uri => newUris.push(uri));
+        setProgress({ done: Math.min(i + BATCH_SIZE, fileArray.length), total: fileArray.length });
       }
 
       const updated = [...(gallery.photos || []), ...newUris];
