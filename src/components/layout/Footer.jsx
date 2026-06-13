@@ -31,13 +31,14 @@ export default function Footer() {
                 { label: 'Book a Session', path: '/booking' }].
                 map((link) =>
                 <Link
-                  key={link.path}
-                  to={link.path}
-                  className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors flex items-center gap-1 group">
-                  
-                    {link.label}
-                    <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </Link>
+                 key={link.path}
+                 to={link.path}
+                 onClick={() => window.scrollTo(0, 0)}
+                 className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors flex items-center gap-1 group">
+
+                   {link.label}
+                   <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                 </Link>
                 )}
               </div>
             </div>
