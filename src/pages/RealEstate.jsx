@@ -45,7 +45,7 @@ export default function RealEstate() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="font-mono text-[11px] text-noir/40 tracking-[0.3em] mb-4"
+            className="font-mono text-[11px] text-noir tracking-[0.3em] mb-4"
           >
             02 — SPACE
           </motion.p>

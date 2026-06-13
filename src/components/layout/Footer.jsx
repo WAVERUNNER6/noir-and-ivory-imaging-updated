@@ -56,7 +56,7 @@ export default function Footer() {
               <p className="font-mono text-xs text-halide tracking-widest uppercase mb-4">Contact</p>
               <div className="flex flex-col gap-3">
                 <a href="mailto:studio@noirandivoryimaging.com" className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors">studio@noirandivoryimaging.com</a>
-                <span className="font-body text-sm text-ivory/60">instagram.com/_noirandivoryimaging_</span>
+                <a href="https://instagram.com/_noirandivoryimaging_" target="_blank" rel="noopener noreferrer" className="font-body text-sm text-ivory/60 hover:text-ivory transition-colors">instagram.com/_noirandivoryimaging_</a>
                 <span className="font-body text-sm text-ivory/60">Los Angeles, CA</span>
               </div>
             </div>

@@ -169,7 +169,7 @@ export default function Pricing() {
       <div className="pt-32 md:pt-40 pb-16 md:pb-24">
         <div className="max-w-[1600px] mx-auto px-6 md:px-12">
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-mono text-[11px] text-halide tracking-[0.3em] mb-4">
-            PRICING
+            03 — PRICING
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}

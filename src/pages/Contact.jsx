@@ -11,14 +11,19 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSending(true);
-    await base44.integrations.Core.SendEmail({
-      to: 'studio@noirandivoryimaging.com',
-      subject: `Contact Form: ${form.name}`,
-      body: `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
-    });
-    toast.success('Message sent successfully');
-    setForm({ name: '', email: '', message: '' });
-    setSending(false);
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: 'studio@noirandivoryimaging.com',
+        subject: `Contact Form: ${form.name}`,
+        body: `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
+      });
+      toast.success('Message sent successfully');
+      setForm({ name: '', email: '', message: '' });
+    } catch (err) {
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (

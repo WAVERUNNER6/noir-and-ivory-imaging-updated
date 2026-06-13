@@ -39,7 +39,7 @@ function HeroSplit() {
             </div>
             <div className="relative h-full flex flex-col justify-end p-8 md:p-16">
               <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.8 }}>
-                <p className="font-mono text-[11px] text-halide tracking-[0.3em] mb-3">01 — SERVICES</p>
+                <p className="font-mono text-[11px] text-halide tracking-[0.3em] mb-3">01 — CHRONOS</p>
                 <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-ivory leading-[0.9]">Event<br />Photography</h2>
                 <div className="mt-6 flex items-center gap-3">
                   <div className="w-12 h-[1px] bg-ivory/40" />
@@ -65,7 +65,7 @@ function HeroSplit() {
             </div>
             <div className="relative h-full flex flex-col justify-end p-8 md:p-16">
               <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.8 }}>
-                <p className="font-mono text-[11px] text-halide tracking-[0.3em] mb-3">02 — SERVICES</p>
+                <p className="font-mono text-[11px] text-halide tracking-[0.3em] mb-3">02 — SPACE</p>
                 <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-ivory leading-[0.9]">Real Estate<br />Photography</h2>
                 <div className="mt-6 flex items-center gap-3">
                   <div className="w-12 h-[1px] bg-ivory/40" />
