@@ -37,28 +37,17 @@ async function uploadBatch(files) {
 
 function PhotoPreviewThumbnail({ fileUri, onDelete }) {
   const [signedUrl, setSignedUrl] = useState(null);
-  const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!fileUri) return;
-    // If it's already a public URL, use it directly
-    if (fileUri.startsWith('http')) {
-      setSignedUrl(fileUri);
-      return;
-    }
     base44.integrations.Core.CreateFileSignedUrl({ file_uri: fileUri, expires_in: 3600 })
       .then(r => setSignedUrl(r.signed_url))
-      .catch(e => { console.error('Signed URL error:', e, fileUri); setError(true); });
+      .catch(() => {});
   }, [fileUri]);
 
   return (
     <div className="relative group">
       {signedUrl ? (
-        <img src={signedUrl} alt="preview" className="w-full aspect-square object-cover border border-halide/20" onError={() => setError(true)} />
-      ) : error ? (
-        <div className="w-full aspect-square bg-red-900/20 border border-red-800/30 flex items-center justify-center">
-          <X size={12} className="text-red-400/50" />
-        </div>
+        <img src={signedUrl} alt="preview" className="w-full aspect-square object-cover border border-halide/20" />
       ) : (
         <div className="w-full aspect-square bg-halide/10 border border-halide/20 flex items-center justify-center">
           <Loader2 size={12} className="animate-spin text-halide/30" />
@@ -93,26 +82,6 @@ function RawPhotoUploader({ booking, onUploaded }) {
 
 
 
-  const compressImage = (file) => new Promise((resolve) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const MAX = 2400;
-      let { width, height } = img;
-      if (width > MAX || height > MAX) {
-        if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
-        else { width = Math.round(width * MAX / height); height = MAX; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width; canvas.height = height;
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-      canvas.toBlob(blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', 0.85);
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
-    img.src = url;
-  });
-
   const handleFiles = async (files) => {
     const fileArray = Array.from(files);
     if (!fileArray.length) return;
@@ -145,19 +114,16 @@ function RawPhotoUploader({ booking, onUploaded }) {
 
     const newUris = [];
     try {
-      for (let i = 0; i < fileArray.length; i += 3) {
-        const batch = fileArray.slice(i, i + 3);
-        setProgress({ done: i, total: fileArray.length, currentName: `Compressing & uploading batch ${Math.floor(i/3)+1}...` });
-        const compressed = await Promise.all(batch.map(compressImage));
-        const results = await Promise.all(compressed.map(f => base44.integrations.Core.UploadPrivateFile({ file: f }).then(r => r.file_uri)));
-        results.forEach(uri => newUris.push(uri));
-        setProgress({ done: Math.min(i + 3, fileArray.length), total: fileArray.length, currentName: '' });
+      for (let i = 0; i < fileArray.length; i++) {
+        setProgress({ done: i, total: fileArray.length, currentName: fileArray[i].name });
+        const result = await base44.integrations.Core.UploadPrivateFile({ file: fileArray[i] });
+        newUris.push(result.file_uri);
+        setProgress({ done: i + 1, total: fileArray.length, currentName: fileArray[i].name });
       }
 
       const updated = [...(gallery.photos || []), ...newUris];
-      console.log('Uploaded URIs:', newUris);
       await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
-      setGallery({ ...gallery, photos: updated });
+      setGallery(prev => prev ? { ...prev, photos: updated } : { ...gallery, photos: updated });
       toast.success(`Uploaded ${newUris.length} raw photo${newUris.length !== 1 ? 's' : ''}`);
       onUploaded && onUploaded(gallery.id, updated.length);
     } catch (err) {
@@ -165,7 +131,7 @@ function RawPhotoUploader({ booking, onUploaded }) {
         // Save whatever succeeded before the failure
         const updated = [...(gallery.photos || []), ...newUris];
         await base44.entities.Gallery.update(gallery.id, { photos: updated, phase: 'raw' });
-        setGallery({ ...gallery, photos: updated });
+        setGallery(prev => prev ? { ...prev, photos: updated } : { ...gallery, photos: updated });
         toast.warning(`Uploaded ${newUris.length} of ${fileArray.length} photos. Some failed: ${err.message}`);
         onUploaded && onUploaded(gallery.id, updated.length);
       } else {
