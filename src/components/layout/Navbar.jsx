@@ -35,7 +35,9 @@ export default function Navbar() {
         <div className="max-w-[1600px] mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-20 md:h-24">
             <Link to="/" className="relative z-50">
-              <span className="font-display text-ivory text-xl md:text-2xl tracking-wide">
+              <span className={`font-display text-xl md:text-2xl tracking-wide ${
+                location.pathname === '/real-estate' && !scrolled ? 'text-noir' : 'text-ivory'
+              }`}>
                 NOIR <span className="text-halide">&</span> IVORY
               </span>
             </Link>
