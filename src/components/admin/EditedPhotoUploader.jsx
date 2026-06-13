@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Upload, Loader2, Send, Check, X, Film } from 'lucide-react';
+import { Upload, Loader2, Send, Check, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BATCH_SIZE = 5;
@@ -15,6 +15,8 @@ export default function EditedPhotoUploader({ booking, gallery, onComplete }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verifyResult, setVerifyResult] = useState(null); // { total, failed }
   const [editedCount, setEditedCount] = useState((gallery?.edited_photos || []).length);
   const fileInputRef = useRef();
 
@@ -22,6 +24,7 @@ export default function EditedPhotoUploader({ booking, gallery, onComplete }) {
     const fileArray = Array.from(files);
     if (!fileArray.length) return;
     setUploading(true);
+    setVerifyResult(null);
     setProgress({ done: 0, total: fileArray.length });
 
     const newUris = [];
@@ -37,6 +40,31 @@ export default function EditedPhotoUploader({ booking, gallery, onComplete }) {
     setEditedCount(existing.length + newUris.length);
     toast.success(`Uploaded ${newUris.length} edited photo${newUris.length !== 1 ? 's' : ''}`);
     setUploading(false);
+  };
+
+  const handleVerify = async () => {
+    setVerifying(true);
+    setVerifyResult(null);
+    // Refresh gallery to get latest edited_photos list
+    const galleries = await base44.entities.Gallery.filter({ booking_id: booking.id });
+    const latestGallery = galleries[0];
+    const uris = latestGallery?.edited_photos || [];
+    let failed = 0;
+    for (const uri of uris) {
+      try {
+        const r = await base44.integrations.Core.CreateFileSignedUrl({ file_uri: uri, expires_in: 300 });
+        if (!r?.signed_url) failed++;
+      } catch (_) {
+        failed++;
+      }
+    }
+    setVerifyResult({ total: uris.length, failed });
+    setVerifying(false);
+    if (failed === 0) {
+      toast.success(`All ${uris.length} photos verified successfully.`);
+    } else {
+      toast.error(`${failed} of ${uris.length} photos failed to load. Re-upload the missing ones before sending.`);
+    }
   };
 
   const handleNotifyClient = async () => {
@@ -80,15 +108,44 @@ export default function EditedPhotoUploader({ booking, gallery, onComplete }) {
           </div>
         )}
       </div>
+
       {editedCount > 0 && (
-        <button
-          onClick={handleNotifyClient}
-          disabled={sending}
-          className="flex items-center gap-2 bg-ivory text-noir px-5 py-2.5 font-mono text-[11px] tracking-widest hover:bg-blue-400 transition-colors disabled:opacity-40"
-        >
-          {sending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-          {sending ? 'SENDING...' : 'SEND FINAL GALLERY & COMPLETE'}
-        </button>
+        <div className="flex flex-wrap gap-3 items-center">
+          {/* Verify button — always shown when photos exist */}
+          <button
+            onClick={handleVerify}
+            disabled={verifying || uploading}
+            className="flex items-center gap-2 border border-halide/30 text-halide px-5 py-2.5 font-mono text-[11px] tracking-widest hover:border-ivory hover:text-ivory transition-colors disabled:opacity-40"
+          >
+            {verifying ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+            {verifying ? `VERIFYING...` : 'VERIFY ALL PHOTOS LOAD'}
+          </button>
+
+          {/* Send button — disabled if verify found failures */}
+          <button
+            onClick={handleNotifyClient}
+            disabled={sending || verifying || (verifyResult?.failed > 0)}
+            title={verifyResult?.failed > 0 ? 'Fix failed photos before sending' : ''}
+            className="flex items-center gap-2 bg-ivory text-noir px-5 py-2.5 font-mono text-[11px] tracking-widest hover:bg-blue-400 transition-colors disabled:opacity-40"
+          >
+            {sending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+            {sending ? 'SENDING...' : 'SEND FINAL GALLERY & COMPLETE'}
+          </button>
+        </div>
+      )}
+
+      {/* Verify result banner */}
+      {verifyResult && (
+        <div className={`flex items-center gap-3 px-4 py-3 border font-mono text-[10px] tracking-widest ${
+          verifyResult.failed === 0
+            ? 'border-green-800/40 bg-green-900/20 text-green-400'
+            : 'border-red-800/40 bg-red-900/20 text-red-400'
+        }`}>
+          {verifyResult.failed === 0
+            ? <><Check size={12} /> ALL {verifyResult.total} PHOTOS VERIFIED — SAFE TO SEND</>
+            : <><AlertTriangle size={12} /> {verifyResult.failed} OF {verifyResult.total} PHOTOS FAILED — RE-UPLOAD MISSING PHOTOS BEFORE SENDING</>
+          }
+        </div>
       )}
     </div>
   );
