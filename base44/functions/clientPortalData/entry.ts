@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
         id: gallery.id,
         phase: gallery.phase || 'raw',
         selected_photos: gallery.selected_photos || [],
-        selection_submitted_at: gallery.selection_submitted_at,
+        selection_submitted_at: gallery.selection_submitted_at || null,
         raw_photo_count: (gallery.photos || []).length,
         edited_photo_count: (gallery.edited_photos || []).length,
       } : null,

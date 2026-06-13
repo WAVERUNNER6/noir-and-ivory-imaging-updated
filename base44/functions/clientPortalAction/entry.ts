@@ -134,6 +134,17 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, new_status: 'editing' });
     }
 
+    if (action === 'reset_photo_selection') {
+      // Admin-initiated: reopen selection so client can pick again (keeps previous selections as pre-checked)
+      const galleries = await base44.asServiceRole.entities.Gallery.filter({ booking_id: booking.id });
+      if (!galleries.length) return Response.json({ error: 'Gallery not found' }, { status: 404 });
+      await base44.asServiceRole.entities.Gallery.update(galleries[0].id, {
+        selection_submitted_at: null,
+      });
+      await base44.asServiceRole.entities.Booking.update(booking.id, { status: 'selecting_photos' });
+      return Response.json({ success: true });
+    }
+
     return Response.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

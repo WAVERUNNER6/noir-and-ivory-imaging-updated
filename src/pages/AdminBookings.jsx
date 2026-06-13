@@ -338,6 +338,39 @@ function PaymentPanel({ booking }) {
   );
 }
 
+function ResetSelectionButton({ booking, onReset }) {
+  const [resetting, setResetting] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const handleResetAndResend = async () => {
+    if (!window.confirm('This will reopen photo selection for the client. Their previous picks will stay pre-selected, and new photos you uploaded will appear. Continue?')) return;
+    setResetting(true);
+    // Reset selection_submitted_at via clientPortalAction
+    await base44.functions.invoke('clientPortalAction', {
+      portal_token: booking.portal_token,
+      action: 'reset_photo_selection',
+      data: {},
+    });
+    // Resend the selection link
+    const appUrl = window.location.origin;
+    await base44.functions.invoke('sendClientPortalLink', { booking_id: booking.id, app_url: appUrl, purpose: 'photo_selection' });
+    toast.success(`Selection reopened and new link sent to ${booking.client_email}`);
+    onReset && onReset();
+    setResetting(false);
+  };
+
+  return (
+    <button
+      onClick={handleResetAndResend}
+      disabled={resetting}
+      className="flex items-center gap-2 border border-purple-800/40 text-purple-300/70 hover:text-purple-300 hover:border-purple-700 px-4 py-2 font-mono text-[10px] tracking-widest transition-colors disabled:opacity-40 w-fit"
+    >
+      {resetting ? <Loader2 size={11} className="animate-spin" /> : <Image size={11} />}
+      {resetting ? 'REOPENING...' : 'REOPEN SELECTION & RESEND LINK'}
+    </button>
+  );
+}
+
 function BookingRow({ booking, onStatusChange, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -594,9 +627,15 @@ function BookingRow({ booking, onStatusChange, onDelete }) {
                   </>
                 )}
                 {localStatus === 'selecting_photos' && (
-                  <p className="font-mono text-[10px] text-purple-400/70 tracking-widest pt-1">
-                    Awaiting client photo selection...
-                  </p>
+                  <div className="flex flex-col gap-2 pt-1">
+                    <p className="font-mono text-[10px] text-purple-400/70 tracking-widest">
+                      Awaiting client photo selection...
+                    </p>
+                    <ResetSelectionButton booking={booking} onReset={() => {
+                      setLocalStatus('selecting_photos');
+                      onStatusChange(booking.id, 'selecting_photos');
+                    }} />
+                  </div>
                 )}
                 {localStatus === 'editing' && (
                   <p className="font-mono text-[10px] text-blue-300/70 tracking-widest pt-1">

@@ -153,6 +153,7 @@ function PhotoSelectionStep({ booking, gallery, rawPhotoUrls, portalToken, onDon
   const [submitting, setSubmitting] = useState(false);
   const [lightbox, setLightbox] = useState(null);
 
+  // If admin has reset selection (cleared selection_submitted_at), allow re-selection
   const alreadySubmitted = !!gallery.selection_submitted_at;
 
   const toggle = (i) => {
@@ -195,7 +196,7 @@ function PhotoSelectionStep({ booking, gallery, rawPhotoUrls, portalToken, onDon
         <p className="font-body text-halide/70 leading-relaxed">
           {alreadySubmitted
             ? `You selected ${selected.size} photo${selected.size !== 1 ? 's' : ''} for editing. We will notify you when they are ready.`
-            : `Select up to ${limit} photos to be edited. Your package: ${booking.package_request || 'Standard'}.`}
+            : `Select up to ${limit} photos to be edited. Your package: ${booking.package_request || 'Standard'}.${selected.size > 0 ? ` Your previous selection of ${selected.size} photo${selected.size !== 1 ? 's' : ''} is pre-loaded — adjust as needed.` : ''}`}
         </p>
         {!alreadySubmitted && (
           <div className="mt-3 flex items-center gap-2">
